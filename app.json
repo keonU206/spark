@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "스파크",
+    "slug": "spark",
+    "scheme": "spark",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FCF7F4",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spark.app"
+    },
+    "android": {
+      "package": "com.spark.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FE6007",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      "expo-image-picker",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "AI PT 자세 교정을 위해 카메라가 필요해요.",
+          "enableMicrophonePermission": false,
+          "enableCodeScanner": false
+        }
+      ],
+      "react-native-fast-tflite"
+    ]
+  }
+}
