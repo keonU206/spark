@@ -64,6 +64,22 @@ export async function joinGroup(inviteCode: string): Promise<GroupSummary> {
   return delay(group);
 }
 
+/**
+ * `POST /groups/{groupId}/feed` — 모임 피드에 글 올리기.
+ *
+ * 별도 작성 화면을 두지 않고 **운동 완료 직후 공유**하는 흐름으로 만들었다.
+ * 시안의 피드 글이 "오늘 스쿼트 20개 3세트 완료!"처럼 운동 기록 자체이기 때문이다.
+ */
+export async function createFeedPost(input: {
+  groupId: string;
+  body: string;
+  sessionId?: string;
+}): Promise<void> {
+  if (!USE_MOCK) notConnected('POST /groups/{id}/feed');
+  void input;
+  await delay(undefined);
+}
+
 /** `POST /groups/{groupId}/feed/{postId}/cheer` — 모임 피드 응원보내기 */
 export async function cheerPost(groupId: string, postId: string): Promise<void> {
   if (!USE_MOCK) notConnected('POST /groups/{id}/feed/{postId}/cheer');

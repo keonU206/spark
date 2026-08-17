@@ -9,7 +9,12 @@ import { SessionResultModal } from '@/components/domain/SessionResultModal';
 import { TabHomeIcon } from '@/components/illustrations/tabIcons';
 import { usePoseEngine } from '@/hooks/usePoseEngine';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
-import { useCompleteSession, useSessionRoutine } from '@/hooks/queries';
+import {
+  useAbortSession,
+  useCompleteSession,
+  useSessionRoutine,
+  useStartSession,
+} from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
 import type { SessionResult } from '@/types/api';
 
@@ -35,7 +40,12 @@ export default function SessionScreen() {
   }>();
 
   const routineQuery = useSessionRoutine(routineId, exerciseId);
+  const start = useStartSession();
+  const abort = useAbortSession();
   const complete = useCompleteSession();
+
+  // 서버가 발급한 세션 id. 완료·중단에 쓴다
+  const sessionId = useRef<string | null>(null);
 
   const [consented, setConsented] = useState(false);
   const [index, setIndex] = useState(0);
@@ -50,6 +60,33 @@ export default function SessionScreen() {
     hasRealSource: hasCamera,
   });
   const finishing = useRef(false);
+  /** 정상 완료했는지 — 언마운트 시 중단으로 기록할지 판단한다 */
+  const finished = useRef(false);
+
+  // 동의하면 서버에 세션 시작을 알린다 (중도 이탈을 세려면 시작 기록이 있어야 한다)
+  useEffect(() => {
+    if (!consented || sessionId.current) return;
+    const key = routineId ?? exerciseId;
+    if (!key) return;
+
+    start.mutate(key, {
+      onSuccess: (res) => {
+        sessionId.current = res.sessionId;
+      },
+    });
+    // start는 매 렌더 새로 만들어지므로 의존성에서 뺀다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consented, routineId, exerciseId]);
+
+  // 완료하지 않고 화면을 벗어나면 중단으로 기록한다
+  useEffect(() => {
+    return () => {
+      if (sessionId.current && !finished.current) {
+        abort.mutate(sessionId.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 타이머는 동의 후, 일시정지가 아닐 때만 흐른다
   useEffect(() => {
@@ -74,11 +111,12 @@ export default function SessionScreen() {
   const progress = total > 0 ? (index + 1) / total : 0;
 
   async function finish() {
-    const sessionKey = routineId ?? exerciseId;
+    const sessionKey = sessionId.current ?? routineId ?? exerciseId;
     if (finishing.current || !sessionKey) return;
     finishing.current = true;
     try {
       setResult(await complete.mutateAsync(sessionKey));
+      finished.current = true;
     } finally {
       finishing.current = false;
     }

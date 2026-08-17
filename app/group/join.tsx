@@ -15,9 +15,10 @@ const CODE_LENGTH = limits.INVITE_CODE_LENGTH;
 
 /**
  * 모임 참여하기 — Figma `77:2170`
- * 시안: 헤더 / "모임 초대코드" / 입력(placeholder "8자리 초대코드를 입력해주세요") / CTA `생성하기`
+ * 시안: 헤더 / "모임 초대코드" / 입력(placeholder "8자리 초대코드를 입력해주세요")
  *
- * CTA 라벨이 `생성하기`인 것은 시안 그대로다 (모임 만들기 화면을 복사한 흔적으로 보인다).
+ * CTA는 시안에 `생성하기`로 되어 있으나 모임 만들기 화면을 복사한 흔적으로 보여
+ * `참여하기`로 바로잡았다. 초대코드를 넣는 화면에서 "생성"은 오해를 부른다.
  */
 export default function JoinGroupScreen() {
   const insets = useSafeAreaInsets();
@@ -65,7 +66,7 @@ export default function JoinGroupScreen() {
 
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 37 }]}>
         <PillButton
-          label="생성하기"
+          label="참여하기"
           variant="primary"
           disabled={formState.isSubmitting}
           onPress={() => void onSubmit()}

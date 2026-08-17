@@ -91,7 +91,11 @@ export const strings = {
    * 초기 설문 — Figma `72:2466`(빈 상태) / `75:3079`(선택된 상태)
    *
    * 선택지 목록은 시안에 없다. 시안에 보이는 값(매우 낮음 / 거의 없음 / 10분 이내 / 가볍게)이
-   * 각 항목의 첫 번째 선택지이고, 나머지는 그 흐름에 맞춰 채웠다. 확정되면 여기만 고치면 된다.
+   * 각 항목의 첫 번째 선택지이고, 나머지는 그 흐름에 맞춰 채웠다.
+   *
+   * `code`와 `label`을 나눈 이유 — 추천 알고리즘은 `code`로 분기하고 화면은 `label`을 그린다.
+   * 문구가 바뀌어도 로직이 깨지지 않고, 서버가 label을 내려주면 앱 배포 없이 문구를 바꿀 수 있다.
+   * 서버 연동 시 이 목록은 `GET /onboarding/survey`가 대체한다.
    */
   survey: {
     title: [
@@ -105,22 +109,42 @@ export const strings = {
       {
         key: 'fitnessLevel',
         label: [{ text: '현재 ' }, { text: '체력', accent: true }, { text: ' 수준' }],
-        options: ['매우 낮음', '낮음', '보통', '높음', '매우 높음'],
+        options: [
+          { code: 'VERY_LOW', label: '매우 낮음' },
+          { code: 'LOW', label: '낮음' },
+          { code: 'NORMAL', label: '보통' },
+          { code: 'HIGH', label: '높음' },
+          { code: 'VERY_HIGH', label: '매우 높음' },
+        ],
       },
       {
         key: 'activityLevel',
         label: [{ text: '평소 ' }, { text: '활동량', accent: true }],
-        options: ['거의 없음', '주 1~2회', '주 3~4회', '주 5회 이상'],
+        options: [
+          { code: 'NONE', label: '거의 없음' },
+          { code: 'WEEK_1_2', label: '주 1~2회' },
+          { code: 'WEEK_3_4', label: '주 3~4회' },
+          { code: 'WEEK_5_PLUS', label: '주 5회 이상' },
+        ],
       },
       {
         key: 'availableTime',
         label: [{ text: '운동 가능 시간 (' }, { text: '하루', accent: true }, { text: ' 기준)' }],
-        options: ['10분 이내', '10~20분', '20~30분', '30분 이상'],
+        options: [
+          { code: 'UNDER_10', label: '10분 이내' },
+          { code: 'MIN_10_20', label: '10~20분' },
+          { code: 'MIN_20_30', label: '20~30분' },
+          { code: 'OVER_30', label: '30분 이상' },
+        ],
       },
       {
         key: 'intensity',
         label: [{ text: '운동 ' }, { text: '강도', accent: true }, { text: ' 선호' }],
-        options: ['가볍게', '보통', '강하게'],
+        options: [
+          { code: 'LIGHT', label: '가볍게' },
+          { code: 'NORMAL', label: '보통' },
+          { code: 'HARD', label: '강하게' },
+        ],
       },
     ],
     pain: {

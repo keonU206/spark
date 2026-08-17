@@ -69,7 +69,7 @@ export default function NotificationSettingsScreen() {
         <SettingGroup title="소셜 알림">
           <SettingRow
             title="친구 독려 알림"
-            description="친구가 보낸 잡도리를 받습니다"
+            description="친구가 보낸 재촉을 받습니다"
             value={settings.friendNudgeEnabled}
             onValueChange={(friendNudgeEnabled) => patch({ friendNudgeEnabled })}
           />

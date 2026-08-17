@@ -13,18 +13,27 @@ import { colors, fontFamily, radius, typography } from '@/theme/tokens';
  * 선택지를 고르는 화면은 시안에 없어서 하단 시트로 구현했다.
  * (다른 형태를 원하면 이 컴포넌트만 교체하면 된다)
  */
+/** 저장하는 값(`code`)과 보여주는 값(`label`)을 나눈다 */
+export type SelectOption = {
+  readonly code: string;
+  readonly label: string;
+};
+
 type Props = {
   label: readonly TextSegment[];
   placeholder: string;
-  options: readonly string[];
+  options: readonly SelectOption[];
+  /** 선택된 `code` */
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (code: string) => void;
   error?: string;
 };
 
 export function SelectField({ label, placeholder, options, value, onChange, error }: Props) {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const selected = options.find((option) => option.code === value);
 
   return (
     <View>
@@ -33,7 +42,7 @@ export function SelectField({ label, placeholder, options, value, onChange, erro
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label.map((s) => s.text).join('')}
-        accessibilityValue={{ text: value ?? placeholder }}
+        accessibilityValue={{ text: selected?.label ?? placeholder }}
         onPress={() => setOpen(true)}
         style={({ pressed }) => [
           styles.field,
@@ -41,7 +50,9 @@ export function SelectField({ label, placeholder, options, value, onChange, erro
           pressed && styles.pressed,
         ]}
       >
-        <Text style={[styles.value, !value && styles.placeholder]}>{value ?? placeholder}</Text>
+        <Text style={[styles.value, !selected && styles.placeholder]}>
+          {selected?.label ?? placeholder}
+        </Text>
         <ChevronDownIcon />
       </Pressable>
 
@@ -56,20 +67,20 @@ export function SelectField({ label, placeholder, options, value, onChange, erro
 
           <ScrollView bounces={false}>
             {options.map((option) => {
-              const selected = option === value;
+              const isSelected = option.code === value;
               return (
                 <Pressable
-                  key={option}
+                  key={option.code}
                   accessibilityRole="button"
-                  accessibilityState={{ selected }}
+                  accessibilityState={{ selected: isSelected }}
                   onPress={() => {
-                    onChange(option);
+                    onChange(option.code);
                     setOpen(false);
                   }}
                   style={({ pressed }) => [styles.option, pressed && styles.pressed]}
                 >
-                  <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>
-                    {option}
+                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
+                    {option.label}
                   </Text>
                 </Pressable>
               );

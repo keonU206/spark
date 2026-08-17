@@ -7,6 +7,7 @@ import {
 
 import {
   cheerPost,
+  createFeedPost,
   getFriendActivities,
   getGroup,
   getGroupStatus,
@@ -25,6 +26,7 @@ import {
 } from '@/services/api/me';
 import { getBadges, getStreakDetail, getWorkoutStats } from '@/services/api/stats';
 import {
+  abortSession,
   completeSession,
   getCategories,
   getExercise,
@@ -33,6 +35,7 @@ import {
   getRecommendedRoutines,
   getRoutine,
   getRoutineForExercise,
+  startSession,
 } from '@/services/api/workout';
 import type { AiPtConsent, NotificationSettings } from '@/types/api';
 
@@ -112,6 +115,16 @@ export function useSessionRoutine(routineId?: string, exerciseId?: string) {
       routineId ? getRoutine(routineId) : getRoutineForExercise(exerciseId as string),
     enabled: !!routineId || !!exerciseId,
   });
+}
+
+/** 세션 시작. 서버가 발급한 sessionId를 완료·중단에 쓴다 */
+export function useStartSession() {
+  return useMutation({ mutationFn: (routineId: string) => startSession(routineId) });
+}
+
+/** 중도 이탈. 실패해도 화면을 막지 않는다 — 서버가 타임아웃으로 정리한다 */
+export function useAbortSession() {
+  return useMutation({ mutationFn: (sessionId: string) => abortSession(sessionId) });
 }
 
 /** 세션 완료 — 기록·통계가 바뀌므로 관련 쿼리를 무효화한다 */
@@ -236,6 +249,19 @@ export function useUpdateMyProfile() {
 /** 계정 삭제. 성공하면 화면에서 로그아웃까지 이어간다 */
 export function useDeleteAccount() {
   return useMutation({ mutationFn: () => deleteAccount() });
+}
+
+/** 운동 완료 후 모임에 공유 */
+export function useShareToFeed() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { groupId: string; body: string; sessionId?: string }) =>
+      createFeedPost(input),
+    onSuccess: (_data, input) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.group(input.groupId) });
+    },
+  });
 }
 
 /** 모임 피드 응원보내기 */

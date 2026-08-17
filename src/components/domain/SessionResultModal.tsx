@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 
+import { ShareToGroupSheet } from '@/components/domain/ShareToGroupSheet';
 import { PillButton } from '@/components/ui/PillButton';
 import { colors, fontFamily } from '@/theme/tokens';
 import type { SessionResult } from '@/types/api';
@@ -17,6 +19,8 @@ export function SessionResultModal({
   result: SessionResult | null;
   onGoHome: () => void;
 }) {
+  const [shareOpen, setShareOpen] = useState(false);
+
   if (!result) return null;
 
   return (
@@ -54,8 +58,22 @@ export function SessionResultModal({
           <Text style={styles.outro}>{'오늘의 운동이 끝났습니다.\n수고했어요!'}</Text>
 
           <View style={styles.cta}>
+            {/* 시안에 피드 작성 화면이 없어, 방금 한 운동을 공유하는 흐름으로 대신한다 */}
+            <PillButton
+              label="모임에 공유하기"
+              variant="outline"
+              height={52}
+              onPress={() => setShareOpen(true)}
+              style={styles.shareButton}
+            />
             <PillButton label="홈으로 돌아가기" variant="primary" height={52} onPress={onGoHome} />
           </View>
+
+          <ShareToGroupSheet
+            visible={shareOpen}
+            result={result}
+            onClose={() => setShareOpen(false)}
+          />
         </View>
       </View>
     </Modal>
@@ -196,5 +214,9 @@ const styles = StyleSheet.create({
   cta: {
     alignItems: 'center',
     marginTop: 18,
+    gap: 10,
+  },
+  shareButton: {
+    borderRadius: 26,
   },
 });

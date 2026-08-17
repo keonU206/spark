@@ -95,6 +95,29 @@ export async function getRoutine(id: string): Promise<Routine> {
   return delay(routine);
 }
 
+/**
+ * `POST /sessions` — 세션 시작.
+ *
+ * 완료 시점에만 알리면 중도 이탈을 셀 수 없다.
+ * 루틴 완료 화면의 "중단 횟수"가 이 값에서 나온다.
+ */
+export async function startSession(routineId: string): Promise<{ sessionId: string }> {
+  if (!USE_MOCK) notConnected('POST /sessions');
+  return delay({ sessionId: `session-${routineId}-${Date.now()}` });
+}
+
+/**
+ * `POST /sessions/{id}/abort` — 중도 이탈.
+ *
+ * 앱이 죽거나 배터리가 나가면 이 호출이 오지 않으므로,
+ * 서버는 일정 시간(예: 3시간) 뒤 미완료 세션을 `aborted`로 정리해야 한다.
+ */
+export async function abortSession(sessionId: string): Promise<void> {
+  if (!USE_MOCK) notConnected('POST /sessions/{id}/abort');
+  void sessionId;
+  await delay(undefined);
+}
+
 /** `POST /sessions/{id}/complete` */
 export async function completeSession(sessionId: string): Promise<SessionResult> {
   if (!USE_MOCK) notConnected('POST /sessions/{id}/complete');
