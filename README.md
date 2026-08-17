@@ -17,6 +17,7 @@
 | 파일 | 역할 |
 |------|------|
 | **[docs/api-contract.md](docs/api-contract.md)** | **본체.** 엔드포인트 31개 · 요청/응답 타입 · 공통 규약 |
+| [docs/erd.md](docs/erd.md) | **데이터 모델 제안.** API 계약서에서 역으로 도출했습니다 |
 | [src/types/api.ts](src/types/api.ts) | 응답 타입 원본. 복붙해서 쓸 수 있습니다 |
 | [src/services/mock/](src/services/mock) | 응답 예시. **시안에 그려진 값 그대로**라 실제 데이터 모양을 바로 볼 수 있습니다 |
 
@@ -187,5 +188,7 @@ src/
 | 문서 | 내용 |
 |------|------|
 | [docs/api-contract.md](docs/api-contract.md) | **백엔드 인계용 API 명세** |
+| [docs/erd.md](docs/erd.md) | 데이터 모델 제안 (ERD) |
+| [docs/screens.md](docs/screens.md) | 화면별 구현 상태 · 시안과 다른 점 |
 | [docs/research.md](docs/research.md) | 시안 분석 · 화면 인벤토리 |
 | [docs/plan_kim_0817_02.md](docs/plan_kim_0817_02.md) | 남은 작업 |
