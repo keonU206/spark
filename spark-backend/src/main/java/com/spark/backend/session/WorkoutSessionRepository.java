@@ -35,4 +35,13 @@ public interface WorkoutSessionRepository extends JpaRepository<WorkoutSession, 
     List<WorkoutSession> findTop10ByUserIdAndStatusOrderByStartedAtDesc(Long userId, WorkoutSession.Status status);
 
     long countByUserIdAndStatus(Long userId, WorkoutSession.Status status);
+
+    /** 루틴으로 완료한 세션 수 — "루틴 완성" 배지 */
+    long countByUserIdAndStatusAndRoutineIdIsNotNull(Long userId, WorkoutSession.Status status);
+
+    /** 총 운동 시간(초) — 기록 화면의 totalHours */
+    @Query("""
+            select coalesce(sum(s.durationSeconds), 0) from WorkoutSession s
+            where s.userId = :userId and s.status = :status""")
+    long sumDurationSeconds(@Param("userId") Long userId, @Param("status") WorkoutSession.Status status);
 }

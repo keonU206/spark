@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SurveyResponseRepository extends JpaRepository<SurveyResponse, Long> {
 
     boolean existsByUserId(Long userId);
+
+    java.util.Optional<SurveyResponse> findByUserId(Long userId);
 }

@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface ExerciseRepository extends JpaRepository<Exercise, String> {
 
+    List<Exercise> findByAiPtSupportedTrue();
+
     @Query("select e from Exercise e join fetch e.category where e.sortOrder > :cursor order by e.sortOrder asc")
     List<Exercise> findPage(@Param("cursor") int cursor, Pageable pageable);
 

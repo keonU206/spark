@@ -1,5 +1,6 @@
 package com.spark.backend.session;
 
+import com.spark.backend.badge.BadgeService;
 import com.spark.backend.common.error.ApiException;
 import com.spark.backend.exercise.Routine;
 import com.spark.backend.exercise.RoutineRepository;
@@ -22,6 +23,7 @@ public class SessionService {
     private final WorkoutSessionRepository sessionRepository;
     private final RoutineRepository routineRepository;
     private final StatsEngine statsEngine;
+    private final BadgeService badgeService;
 
     @Transactional
     public StartSessionResponse start(Long userId, String routineId) {
@@ -61,6 +63,8 @@ public class SessionService {
                     .forEach(SessionExercise::markSkipped);
         }
         session.complete();
+        // 운동 직후 배지 화면이 바로 갱신돼 보이도록 진행도를 재계산한다
+        badgeService.recompute(userId);
 
         StatsEngine.MonthlyStats monthly = statsEngine.monthlyStats(userId, YearMonth.now());
         return new SessionResultResponse(
