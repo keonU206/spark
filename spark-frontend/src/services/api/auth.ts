@@ -1,14 +1,11 @@
+import { http } from '@/services/http';
 import type { TokenPair } from '@/services/tokenStorage';
 
-/** mock ↔ 실서버 전환 스위치. 백엔드가 붙으면 false로 바꾼다. */
-const USE_MOCK = true;
+/** mock ↔ 실서버 전환 스위치. `.env`의 `EXPO_PUBLIC_USE_MOCK=false`면 실서버로 붙는다. */
+const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK !== 'false';
 
 function delay<T>(value: T, ms = 300): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
-
-function notConnected(endpoint: string): never {
-  throw new Error(`${endpoint} 아직 연결되지 않음 — services/api/auth.ts 참고`);
 }
 
 export type AuthSession = TokenPair & {
@@ -27,17 +24,13 @@ const mockSession: AuthSession = {
 
 /** `POST /auth/login/email` */
 export async function loginWithEmail(email: string, password: string): Promise<AuthSession> {
-  if (!USE_MOCK) notConnected('POST /auth/login/email');
-  void email;
-  void password;
-  // 기존 계정으로 들어오는 것이므로 설문은 이미 마친 상태로 본다
-  return delay(mockSession);
+  if (USE_MOCK) {
+    // 기존 계정으로 들어오는 것이므로 설문은 이미 마친 상태로 본다
+    return delay(mockSession);
+  }
+  const { data } = await http.post<AuthSession>('/auth/login/email', { email, password });
+  return data;
 }
-
-/**
- * `POST /auth/signup/email` 응답과 구분하기 위한 메모.
- * 이메일 가입은 `isNewUser`가 항상 true, `surveyCompleted`가 항상 false다.
- */
 
 export type SocialProvider = 'google';
 
@@ -46,24 +39,19 @@ export type SocialProvider = 'google';
  *
  * 소셜 로그인은 **가입과 로그인이 같은 요청**이다. 앱은 구글에서 받은 `idToken`을
  * 그대로 넘기기만 하고, 회원 레코드를 만들지 판단하는 것은 서버다.
- *
- * 서버가 해야 할 일:
- *   1. `idToken`을 구글에 검증한다 (서명·만료·audience). 앱의 말을 믿으면 안 된다
- *   2. `(provider, providerUserId)`로 사용자를 찾는다
- *   3. 없으면 사용자 레코드를 만든다 — 이때 `isNewUser: true`로 응답
- *   4. 자체 accessToken/refreshToken을 발급해 내려준다
- *
- * 이메일은 구글 계정마다 바뀔 수 있으므로 식별자는 `providerUserId`를 쓰는 편이 안전하다.
+ * 서버는 idToken을 구글에 검증한 뒤 자체 accessToken/refreshToken을 발급한다.
  */
 export async function loginWithSocial(input: {
   provider: SocialProvider;
   /** 구글이 발급한 ID 토큰. 서버가 이 값을 검증한다 */
   idToken: string;
 }): Promise<AuthSession> {
-  if (!USE_MOCK) notConnected('POST /auth/login/social');
-  void input;
-  // 실제 서버는 신규 가입이면 isNewUser·surveyCompleted를 다르게 내려준다
-  return delay(mockSession);
+  if (USE_MOCK) {
+    // 실제 서버는 신규 가입이면 isNewUser·surveyCompleted를 다르게 내려준다
+    return delay(mockSession);
+  }
+  const { data } = await http.post<AuthSession>('/auth/login/social', input);
+  return data;
 }
 
 /** `POST /auth/signup/email` — 이메일·비밀번호·이름을 한 번에 보낸다 */
@@ -72,15 +60,26 @@ export async function signUpWithEmail(input: {
   password: string;
   name: string;
 }): Promise<AuthSession> {
-  if (!USE_MOCK) notConnected('POST /auth/signup/email');
-  void input;
-  // 새 계정이므로 설문을 거쳐야 한다
-  return delay({ ...mockSession, surveyCompleted: false, isNewUser: true });
+  if (USE_MOCK) {
+    // 새 계정이므로 설문을 거쳐야 한다
+    return delay({ ...mockSession, surveyCompleted: false, isNewUser: true });
+  }
+  const { data } = await http.post<AuthSession>('/auth/signup/email', input);
+  return data;
 }
 
 /** `POST /onboarding/survey` */
 export async function submitSurvey(answers: Record<string, unknown>): Promise<void> {
-  if (!USE_MOCK) notConnected('POST /onboarding/survey');
-  void answers;
-  await delay(undefined);
+  if (USE_MOCK) {
+    await delay(undefined);
+    return;
+  }
+  await http.post('/onboarding/survey', answers);
+}
+
+/** `POST /auth/refresh` — 쓴 refreshToken은 폐기되고 새 쌍이 발급된다(회전 방식) */
+export async function refreshSession(refreshToken: string): Promise<AuthSession> {
+  if (USE_MOCK) return delay(mockSession);
+  const { data } = await http.post<AuthSession>('/auth/refresh', { refreshToken });
+  return data;
 }
