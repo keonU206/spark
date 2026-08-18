@@ -143,6 +143,33 @@ cd android && ./gradlew :app:assembleDebug
 `ANDROID_HOME` 환경변수가 필요합니다.
 iOS는 macOS가 필요하며, Windows에서는 EAS Build를 씁니다 (`eas.json` 준비됨).
 
+### EAS 클라우드 빌드로 APK 받기 (로컬 Android SDK 없이)
+
+로컬에 JDK 17·Android SDK가 없으면 위 gradle 빌드는 실패합니다.
+그 경우 EAS 클라우드 빌드가 가장 쉽습니다. (Expo 계정 필요 · 무료 플랜은 대기열 포함 10~30분)
+
+**개발용 APK (dev client)** — 평소 개발할 때 쓰는 앱:
+
+```bash
+npx eas-cli build --profile development --platform android
+```
+
+- 처음이면 로그인 → "Would you like to automatically create an EAS project?" → **Y** (app.json에 projectId가 기록되므로 커밋할 것)
+- "Install and run on an emulator?" 질문은 **N** (폰으로 볼 거면 필요 없음)
+- 빌드가 끝나면 터미널의 QR을 **폰 기본 카메라**로 찍어 APK 설치 (1회만)
+- 이후 매일: 프로젝트 **루트**에서 `npx expo start` 실행 → 폰과 PC를 **같은 Wi-Fi**에 두고
+  설치한 spark 앱에서 QR 스캔 → 핫 리로드로 개발. Expo Go와 달리 카메라 자세 인식까지 동작합니다.
+
+**배포·제출용 APK** — 서버 주소를 내장한 단독 실행 버전 (개발 서버 불필요):
+
+```bash
+npx eas-cli build --profile preview --platform android
+```
+
+- 빌드 전 `.env`의 `EXPO_PUBLIC_API_BASE_URL`이 실제 서버 주소인지 확인
+- `production` 프로필은 스토어 제출용 AAB를 만듭니다 (APK가 필요하면 `preview` 사용)
+- 진행 상황과 지난 빌드의 APK는 [expo.dev](https://expo.dev) 프로젝트 페이지에서 다시 받을 수 있습니다
+
 ## 구조
 
 ```
