@@ -49,10 +49,14 @@ class SessionFlowTest {
     }
 
     private String startSession() throws Exception {
+        return startSession("routine-1");
+    }
+
+    private String startSession(String routineId) throws Exception {
         String response = mockMvc.perform(post("/sessions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"routineId\": \"routine-1\" }"))
+                        .content("{ \"routineId\": \"" + routineId + "\" }"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         return objectMapper.readTree(response).get("sessionId").asString();
@@ -123,6 +127,41 @@ class SessionFlowTest {
         mockMvc.perform(post("/sessions/not-a-number/abort")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void 단일_운동은_운동_id_그대로_시작한다() throws Exception {
+        // 프론트 session.tsx는 `routineId ?? exerciseId`를 보낸다 — 운동 상세에서는 맨 운동 id
+        String sessionId = startSession("e-10");
+
+        mockMvc.perform(post("/sessions/" + sessionId + "/complete")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exercises.length()").value(1))
+                .andExpect(jsonPath("$.exercises[0].exerciseId").value("e-10"))
+                .andExpect(jsonPath("$.exercises[0].name").value("플랭크"))
+                // 단일 운동은 "완료 루틴" 수를 늘리지 않는다
+                .andExpect(jsonPath("$.monthly.completedRoutines").value(0));
+    }
+
+    @Test
+    void single_접두사_형식도_같은_단일_운동으로_해석한다() throws Exception {
+        // getRoutineForExercise가 만드는 가짜 루틴 id 형식
+        String sessionId = startSession("single-e-10");
+        mockMvc.perform(post("/sessions/" + sessionId + "/complete")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exercises[0].exerciseId").value("e-10"));
+    }
+
+    @Test
+    void 루틴도_운동도_아닌_id로_시작하면_404() throws Exception {
+        mockMvc.perform(post("/sessions")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"routineId\": \"no-such-thing\" }"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("ROUTINE_NOT_FOUND"));
     }
 
     @Test

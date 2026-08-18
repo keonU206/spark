@@ -218,7 +218,8 @@ public class GroupService {
                 group.getDescription(),
                 group.getCoverUrl(),
                 users.size(),
-                LabelFormatter.lastActivityLabel(lastActivity));
+                LabelFormatter.lastActivityLabel(lastActivity),
+                group.getInviteCode());
     }
 
     private FeedPostResponse toFeedPost(FeedPost post, Long viewerId, Map<Long, User> users) {

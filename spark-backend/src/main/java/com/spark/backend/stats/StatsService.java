@@ -55,10 +55,13 @@ public class StatsService {
                 .map(s -> {
                     int skipped = (int) s.getExercises().stream()
                             .filter(e -> e.getStatus() == SessionExercise.Status.SKIPPED).count();
+                    // 루틴 이름이 없으면(단일 운동 세션) 스냅샷된 운동 이름으로 표시한다
+                    String label = s.getRoutineId() != null && routines.containsKey(s.getRoutineId())
+                            ? routines.get(s.getRoutineId()).getName()
+                            : s.getExercises().isEmpty() ? "자유 운동" : s.getExercises().get(0).getExerciseName();
                     return new RecentSessionResponse(
                             String.valueOf(s.getId()),
-                            s.getRoutineId() != null && routines.containsKey(s.getRoutineId())
-                                    ? routines.get(s.getRoutineId()).getName() : "자유 운동",
+                            label,
                             LabelFormatter.whenLabel(s.getStartedAt().toLocalDate()),
                             Math.round(s.getDurationSeconds() / 60f),
                             s.getExercises().size() - skipped,

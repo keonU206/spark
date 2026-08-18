@@ -56,7 +56,9 @@ public final class GroupDtos {
             String description,
             String coverUrl,
             int memberCount,
-            String lastActivityLabel
+            String lastActivityLabel,
+            /** 계약서에는 없는 추가 필드 — 모임장이 코드를 공유할 UI가 생기면 쓴다 */
+            String inviteCode
     ) {
     }
 

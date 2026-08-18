@@ -99,6 +99,10 @@ public class StatsEngine {
         List<WorkoutSession> completed = closed.stream()
                 .filter(s -> s.getStatus() == WorkoutSession.Status.COMPLETED)
                 .toList();
+        // "완료 루틴"은 루틴으로 한 것만 센다 — 단일 운동 세션이 수치를 부풀리면 안 된다
+        int completedRoutines = (int) completed.stream()
+                .filter(s -> s.getRoutineId() != null)
+                .count();
         int aborted = closed.size() - completed.size();
         int averageMinutes = completed.isEmpty() ? 0
                 : (int) Math.round(completed.stream()
@@ -106,6 +110,6 @@ public class StatsEngine {
         long skipped = sessionExerciseRepository.countByStatusInRange(
                 userId, SessionExercise.Status.SKIPPED, from, to);
 
-        return new MonthlyStats(completed.size(), aborted, averageMinutes, (int) skipped);
+        return new MonthlyStats(completedRoutines, aborted, averageMinutes, (int) skipped);
     }
 }

@@ -2,6 +2,8 @@ package com.spark.backend.session;
 
 import com.spark.backend.badge.BadgeService;
 import com.spark.backend.common.error.ApiException;
+import com.spark.backend.exercise.Exercise;
+import com.spark.backend.exercise.ExerciseRepository;
 import com.spark.backend.exercise.Routine;
 import com.spark.backend.exercise.RoutineRepository;
 import com.spark.backend.session.dto.SessionDtos.SessionExerciseResult;
@@ -22,23 +24,37 @@ public class SessionService {
 
     private final WorkoutSessionRepository sessionRepository;
     private final RoutineRepository routineRepository;
+    private final ExerciseRepository exerciseRepository;
     private final StatsEngine statsEngine;
     private final BadgeService badgeService;
 
-    @Transactional
-    public StartSessionResponse start(Long userId, String routineId) {
-        WorkoutSession session = WorkoutSession.builder()
-                .userId(userId)
-                .routineId(routineId)
-                .build();
+    /** 프론트가 단일 운동을 가짜 루틴으로 감쌀 때 붙이는 접두사 (workout.ts getRoutineForExercise) */
+    private static final String SINGLE_EXERCISE_PREFIX = "single-";
 
-        // 루틴으로 시작하면 구성 운동을 순서대로 스냅샷 떠 둔다
-        if (routineId != null) {
-            Routine routine = routineRepository.findById(routineId)
-                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ROUTINE_NOT_FOUND",
-                            "루틴을 찾을 수 없어요."));
+    /**
+     * 세션 시작. 프론트(session.tsx)는 `routineId ?? exerciseId`를 그대로 보내므로
+     * 이 값은 루틴 id일 수도, 운동 id일 수도, `single-{exerciseId}`일 수도 있다.
+     * 해석 순서: ① 실제 루틴 → ② (접두사를 벗긴) 운동 id → ③ 404
+     */
+    @Transactional
+    public StartSessionResponse start(Long userId, String key) {
+        WorkoutSession session;
+
+        Routine routine = routineRepository.findById(key).orElse(null);
+        if (routine != null) {
+            // 루틴 세션 — 구성 운동을 순서대로 스냅샷 떠 둔다
+            session = WorkoutSession.builder().userId(userId).routineId(key).build();
             routine.getExercises().forEach(re ->
                     session.addExercise(re.getExercise().getId(), re.getExercise().getName()));
+        } else {
+            // 단일 운동 세션 — routineId 없이 운동 하나만 스냅샷한다
+            String exerciseId = key.startsWith(SINGLE_EXERCISE_PREFIX)
+                    ? key.substring(SINGLE_EXERCISE_PREFIX.length()) : key;
+            Exercise exercise = exerciseRepository.findById(exerciseId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ROUTINE_NOT_FOUND",
+                            "루틴을 찾을 수 없어요."));
+            session = WorkoutSession.builder().userId(userId).build();
+            session.addExercise(exercise.getId(), exercise.getName());
         }
 
         sessionRepository.save(session);
