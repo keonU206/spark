@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/error").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/uploads/**").permitAll()
                         .anyRequest().authenticated())
                 // 401 본문도 프론트 규약 { message, code } 를 따른다
                 .exceptionHandling(handling -> handling.authenticationEntryPoint((request, response, e) -> {

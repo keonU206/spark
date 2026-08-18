@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### uploaded files ###
+uploads/
