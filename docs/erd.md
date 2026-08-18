@@ -2,7 +2,7 @@
 
 > 작성일: 2026-08-18
 > **프론트엔드가 API 계약서에서 역으로 도출한 제안입니다.** 실제 스키마는 백엔드가 정합니다.
-> 근거: [`api-contract.md`](api-contract.md) · [`src/types/api.ts`](../src/types/api.ts)
+> 근거: [`api-contract.md`](api-contract.md) · [`src/types/api.ts`](../spark-frontend/src/types/api.ts)
 
 이 문서의 목적은 "화면이 이런 데이터를 요구하니 최소한 이 정보는 어딘가에 있어야 한다"를
 보여주는 것입니다. 정규화 수준·인덱스·파티셔닝은 백엔드 판단입니다.

@@ -1,7 +1,7 @@
 # API 계약서 — 스파크
 
 > 작성일: 2026-08-17 · 프론트엔드 → 백엔드 인계용
-> 근거 코드: [`src/types/api.ts`](../src/types/api.ts) (응답 타입) · [`src/services/api/`](../src/services/api) (엔드포인트별 호출)
+> 근거 코드: [`src/types/api.ts`](../spark-frontend/src/types/api.ts) (응답 타입) · [`src/services/api/`](../spark-frontend/src/services/api) (엔드포인트별 호출)
 
 ---
 

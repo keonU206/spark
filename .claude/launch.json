@@ -3,6 +3,7 @@
   "configurations": [
     {
       "name": "spark-web",
+      "cwd": "spark-frontend",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["expo", "start", "--web", "--port", "8081"],
       "port": 8081
