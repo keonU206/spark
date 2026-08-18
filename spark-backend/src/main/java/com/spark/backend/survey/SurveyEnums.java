@@ -7,18 +7,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 /**
- * 설문 선택지. 프론트는 표시 문자열(한국어)을 그대로 보낸다 — docs/api-contract.md §2.
- * DB에는 enum 코드로 저장한다 (코드값+표시명 분리, docs/erd.md §9-3).
+ * 설문 선택지. 프론트(SelectField)는 **코드값**(예: VERY_LOW, WEEK_1_2)을 보낸다 —
+ * spark-frontend/src/constants/strings.ts 의 code와 enum 이름이 1:1이다.
+ * 계약서(docs/api-contract.md §2)의 예시였던 한국어 표시 문자열도 함께 받아준다.
  */
 public final class SurveyEnums {
 
     private SurveyEnums() {
     }
 
-    private static <E extends Enum<E>> E fromLabel(E[] values, java.util.function.Function<E, String> labelOf,
-                                                   String label, String fieldName) {
+    /** 코드값(enum 이름) 또는 표시 라벨 어느 쪽이 와도 해석한다 */
+    private static <E extends Enum<E>> E resolve(E[] values, java.util.function.Function<E, String> labelOf,
+                                                 String raw, String fieldName) {
         return Arrays.stream(values)
-                .filter(v -> labelOf.apply(v).equals(label))
+                .filter(v -> v.name().equals(raw) || labelOf.apply(v).equals(raw))
                 .findFirst()
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "INVALID_INPUT",
                         fieldName + " 값이 올바르지 않아요."));
@@ -31,20 +33,20 @@ public final class SurveyEnums {
 
         private final String label;
 
-        public static FitnessLevel fromLabel(String label) {
-            return SurveyEnums.fromLabel(values(), FitnessLevel::getLabel, label, "체력 수준");
+        public static FitnessLevel from(String raw) {
+            return resolve(values(), FitnessLevel::getLabel, raw, "체력 수준");
         }
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum ActivityLevel {
-        NONE("거의 없음"), WEEKLY_1_2("주 1~2회"), WEEKLY_3_4("주 3~4회"), WEEKLY_5_PLUS("주 5회 이상");
+        NONE("거의 없음"), WEEK_1_2("주 1~2회"), WEEK_3_4("주 3~4회"), WEEK_5_PLUS("주 5회 이상");
 
         private final String label;
 
-        public static ActivityLevel fromLabel(String label) {
-            return SurveyEnums.fromLabel(values(), ActivityLevel::getLabel, label, "활동량");
+        public static ActivityLevel from(String raw) {
+            return resolve(values(), ActivityLevel::getLabel, raw, "활동량");
         }
     }
 
@@ -55,8 +57,8 @@ public final class SurveyEnums {
 
         private final String label;
 
-        public static AvailableTime fromLabel(String label) {
-            return SurveyEnums.fromLabel(values(), AvailableTime::getLabel, label, "운동 가능 시간");
+        public static AvailableTime from(String raw) {
+            return resolve(values(), AvailableTime::getLabel, raw, "운동 가능 시간");
         }
     }
 
@@ -67,12 +69,12 @@ public final class SurveyEnums {
 
         private final String label;
 
-        public static WorkoutIntensity fromLabel(String label) {
-            return SurveyEnums.fromLabel(values(), WorkoutIntensity::getLabel, label, "운동 강도");
+        public static WorkoutIntensity from(String raw) {
+            return resolve(values(), WorkoutIntensity::getLabel, raw, "운동 강도");
         }
     }
 
-    /** 프론트가 코드값으로 보내는 유일한 항목 */
+    /** 프론트가 key 값(neckShoulder …)으로 보내는 항목 */
     public enum PainArea {
         neckShoulder, lowerBack, kneeLeg, wristElbow, none;
 

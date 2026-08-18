@@ -3,6 +3,11 @@
 > 작성일: 2026-08-17 · 프론트엔드 → 백엔드 인계용
 > 근거 코드: [`src/types/api.ts`](../spark-frontend/src/types/api.ts) (응답 타입) · [`src/services/api/`](../spark-frontend/src/services/api) (엔드포인트별 호출)
 
+> ✅ **2026-08-19 백엔드 구현 완료.** 이 문서의 §9 미정 항목들이 확정된 내용은
+> [`spark-backend/README.md`](../spark-backend/README.md)의 "구현 노트"를 보세요.
+> 특히: refresh 스펙 확정 · 설문은 코드값 기준 · `POST /sessions`(시작)/abort **구현됨** ·
+> complete의 선택 body `skippedExerciseIds` · 피드 작성/댓글 확장 API · 에러 코드 목록.
+
 ---
 
 ## 0. 읽는 법

@@ -112,6 +112,19 @@ class AuthFlowTest {
     }
 
     @Test
+    void 설문은_프론트가_보내는_코드값도_받는다() throws Exception {
+        // SelectField는 라벨이 아니라 code(VERY_LOW, WEEK_1_2 …)를 보낸다 — strings.ts
+        String accessToken = postJson("/auth/signup/email", SIGNUP_BODY).get("accessToken").asString();
+        mockMvc.perform(post("/onboarding/survey").contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .content("""
+                                { "fitnessLevel": "VERY_LOW", "activityLevel": "WEEK_1_2",
+                                  "availableTime": "UNDER_10", "intensity": "HARD", "painAreas": ["none"] }
+                                """))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
     void 통증없음은_다른_부위와_함께_선택할_수_없다() throws Exception {
         String accessToken = postJson("/auth/signup/email", SIGNUP_BODY).get("accessToken").asString();
         mockMvc.perform(post("/onboarding/survey").contentType(MediaType.APPLICATION_JSON)

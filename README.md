@@ -18,7 +18,7 @@ cd spark-frontend
 npm install
 npx expo start          # 폰의 dev client 앱으로 QR 스캔
 
-# 백엔드 (XAMPP MariaDB 3306이 켜져 있어야 함)
+# 백엔드 (3306이 켜져 있어야 함)
 cd spark-backend
 ./gradlew bootRun       # http://localhost:4000
 ```

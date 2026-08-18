@@ -34,10 +34,10 @@ public class SurveyService {
 
         surveyResponseRepository.save(SurveyResponse.builder()
                 .userId(userId)
-                .fitnessLevel(SurveyEnums.FitnessLevel.fromLabel(fitnessLevel))
-                .activityLevel(SurveyEnums.ActivityLevel.fromLabel(activityLevel))
-                .availableTime(SurveyEnums.AvailableTime.fromLabel(availableTime))
-                .intensity(SurveyEnums.WorkoutIntensity.fromLabel(intensity))
+                .fitnessLevel(SurveyEnums.FitnessLevel.from(fitnessLevel))
+                .activityLevel(SurveyEnums.ActivityLevel.from(activityLevel))
+                .availableTime(SurveyEnums.AvailableTime.from(availableTime))
+                .intensity(SurveyEnums.WorkoutIntensity.from(intensity))
                 .painAreas(painAreas)
                 .build());
     }
