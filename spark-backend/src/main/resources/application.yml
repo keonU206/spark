@@ -20,6 +20,16 @@ spring:
   jackson:
     time-zone: Asia/Seoul
 
+app:
+  jwt:
+    # 개발 기본값. 배포 시 JWT_SECRET 환경변수로 반드시 교체 (32바이트 이상)
+    secret: ${JWT_SECRET:spark-dev-secret-key-change-me-in-production-1234}
+    access-token-minutes: 60
+    refresh-token-days: 30
+  google:
+    # 구글 로그인 검증용. 비어 있으면 소셜 로그인은 501을 돌려준다
+    client-id: ${GOOGLE_CLIENT_ID:}
+
 logging:
   level:
     org.hibernate.SQL: debug

@@ -1,4 +1,4 @@
-# 테스트는 로컬 MariaDB 없이도 돌아가도록 H2(MariaDB 호환 모드)를 쓴다
+# 테스트 설정 — 같은 이름의 메인 application.yml을 "대체"하므로 필요한 값을 전부 갖고 있어야 한다
 spring:
   datasource:
     url: jdbc:h2:mem:spark;MODE=MariaDB;DB_CLOSE_DELAY=-1
@@ -8,3 +8,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+app:
+  jwt:
+    secret: spark-test-secret-key-only-for-tests-1234567890
+    access-token-minutes: 60
+    refresh-token-days: 30
+  google:
+    client-id: ""
