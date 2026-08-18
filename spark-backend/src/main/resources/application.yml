@@ -1,0 +1,25 @@
+# 프론트의 기본 baseURL이 http://localhost:4000 이라 포트를 맞춘다 (spark/src/services/http.ts)
+server:
+  port: 4000
+
+spring:
+  datasource:
+    # 로컬 기본값(XAMPP MariaDB). 배포 환경에서는 환경변수로 덮어쓴다
+    url: ${DB_URL:jdbc:mariadb://localhost:3306/spark}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:1234}
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      # 해커톤 개발 단계: 엔티티 기준으로 스키마 자동 갱신. 배포 시점에 validate로 바꾼다
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    time-zone: Asia/Seoul
+
+logging:
+  level:
+    org.hibernate.SQL: debug

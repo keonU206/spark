@@ -1,0 +1,10 @@
+# 테스트는 로컬 MariaDB 없이도 돌아가도록 H2(MariaDB 호환 모드)를 쓴다
+spring:
+  datasource:
+    url: jdbc:h2:mem:spark;MODE=MariaDB;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
