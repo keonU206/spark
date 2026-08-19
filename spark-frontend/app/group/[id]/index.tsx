@@ -1,6 +1,16 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CheerModal } from '@/components/domain/CheerModal';
@@ -12,7 +22,7 @@ import { MonthCalendar } from '@/components/domain/MonthCalendar';
 import { BackButton } from '@/components/ui/BackButton';
 import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
-import { useAddComment, useGroup, useGroupStatus, useSendNudge } from '@/hooks/queries';
+import { useAddComment, useDeleteFeedPost, useGroup, useGroupStatus, useSendNudge } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
 import type { FeedPost, GroupDayAttendance } from '@/types/api';
 
@@ -39,7 +49,21 @@ export default function GroupDetailScreen() {
   const { data, error, isPending, refetch } = useGroup(id);
   const statusQuery = useGroupStatus(id);
   const comment = useAddComment(id);
+  const deletePost = useDeleteFeedPost(id);
   const nudge = useSendNudge();
+
+  /** 삭제는 되돌릴 수 없으니 한 번 확인한다 (웹은 confirm, 폰은 Alert) */
+  function confirmDelete(postId: string) {
+    const run = () => deletePost.mutate(postId);
+    if (Platform.OS === 'web') {
+      if (globalThis.confirm?.('이 글을 삭제할까요? 달린 응원과 댓글도 함께 지워져요.')) run();
+      return;
+    }
+    Alert.alert('글 삭제', '이 글을 삭제할까요?\n달린 응원과 댓글도 함께 지워져요.', [
+      { text: '취소', style: 'cancel' },
+      { text: '삭제', style: 'destructive', onPress: run },
+    ]);
+  }
 
   const [inviteOpen, setInviteOpen] = useState(false);
   /** 응원 보내기 모달이 열려 있는 대상 글 */
@@ -168,7 +192,12 @@ export default function GroupDetailScreen() {
             <Text style={styles.loadingHint}>아직 글이 없어요. 운동을 완료하고 공유해보세요!</Text>
           ) : (
             data.feed.map((post) => (
-              <FeedPostCard key={post.id} post={post} onCheer={() => setCheerTarget(post)} />
+              <FeedPostCard
+                key={post.id}
+                post={post}
+                onCheer={() => setCheerTarget(post)}
+                onDelete={() => confirmDelete(post.id)}
+              />
             ))
           )}
         </View>

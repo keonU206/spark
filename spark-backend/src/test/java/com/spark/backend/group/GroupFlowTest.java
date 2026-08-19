@@ -174,6 +174,28 @@ class GroupFlowTest {
     }
 
     @Test
+    void 내_글은_삭제되고_남의_글은_403() throws Exception {
+        String groupId = createGroupAndInviteFriend();
+        String postId = postJson(ownerToken, "/groups/" + groupId + "/feed",
+                "{ \"body\": \"지울 글\" }").get("id").asString();
+
+        // 남의 글 삭제 시도 → 403
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete("/groups/" + groupId + "/feed/" + postId)
+                        .header("Authorization", "Bearer " + friendToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("NOT_POST_AUTHOR"));
+
+        // 본인 삭제 → 204, 상세에서 사라짐
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete("/groups/" + groupId + "/feed/" + postId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/groups/" + groupId).header("Authorization", "Bearer " + ownerToken))
+                .andExpect(jsonPath("$.feed.length()").value(0));
+    }
+
+    @Test
     void 멤버가_아니면_모임_조회_403() throws Exception {
         String groupId = postJson(ownerToken, "/groups", "{ \"name\": \"비공개\" }").get("id").asString();
         String outsiderToken = signup("outsider@spark.app", "외부인");

@@ -105,6 +105,17 @@ export async function createFeedPost(input: {
   });
 }
 
+/** `DELETE /groups/{groupId}/feed/{postId}` — 내가 쓴 글 삭제 (응원·댓글도 함께 삭제) */
+export async function deleteFeedPost(groupId: string, postId: string): Promise<void> {
+  if (USE_MOCK) {
+    void groupId;
+    void postId;
+    await delay(undefined);
+    return;
+  }
+  await http.delete(`/groups/${groupId}/feed/${postId}`);
+}
+
 /** `POST /groups/{groupId}/feed/{postId}/comments` — 응원 문구 달기 (피드에 댓글로 표시) */
 export async function addComment(groupId: string, postId: string, body: string): Promise<void> {
   if (USE_MOCK) {

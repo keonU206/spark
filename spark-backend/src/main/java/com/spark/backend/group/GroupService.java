@@ -151,6 +151,19 @@ public class GroupService {
         }
     }
 
+    /** 피드 글 삭제 — 작성자 본인만. 달린 응원·댓글도 함께 지워진다 */
+    @Transactional
+    public void deletePost(Long userId, Long groupId, Long postId) {
+        findGroupAsMember(userId, groupId);
+        FeedPost post = feedPostRepository.findByIdAndGroupId(postId, groupId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "POST_NOT_FOUND",
+                        "글을 찾을 수 없어요."));
+        if (!post.getAuthorId().equals(userId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "NOT_POST_AUTHOR", "내가 쓴 글만 지울 수 있어요.");
+        }
+        feedPostRepository.delete(post);
+    }
+
     /** 확장 API — 댓글 작성 */
     @Transactional
     public void createComment(Long userId, Long groupId, Long postId, String body) {

@@ -11,6 +11,7 @@ import {
   cheerPost,
   createFeedPost,
   createGroup,
+  deleteFeedPost,
   getFriendActivities,
   getGroup,
   getGroupStatus,
@@ -327,6 +328,18 @@ export function useShareToFeed() {
       createFeedPost(input),
     onSuccess: (_data, input) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.group(input.groupId) });
+    },
+  });
+}
+
+/** 내가 쓴 피드 글 삭제 */
+export function useDeleteFeedPost(groupId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (postId: string) => deleteFeedPost(groupId as string, postId),
+    onSuccess: () => {
+      if (groupId) void queryClient.invalidateQueries({ queryKey: queryKeys.group(groupId) });
     },
   });
 }

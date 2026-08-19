@@ -7,7 +7,16 @@ import type { FeedPost } from '@/types/api';
  * 모임 피드 게시물 — Figma `87:813`
  * 시안: 작성자 + 시각 + `응원보내기` / 사진 / 본문 / 반응 칩 / 댓글.
  */
-export function FeedPostCard({ post, onCheer }: { post: FeedPost; onCheer: () => void }) {
+export function FeedPostCard({
+  post,
+  onCheer,
+  onDelete,
+}: {
+  post: FeedPost;
+  onCheer: () => void;
+  /** 내 글일 때만 쓰인다 (canCheer가 false = 내 글) */
+  onDelete?: () => void;
+}) {
   return (
     <View style={styles.card}>
       <View style={styles.headerRow}>
@@ -30,6 +39,17 @@ export function FeedPostCard({ post, onCheer }: { post: FeedPost; onCheer: () =>
             style={({ pressed }) => [styles.cheer, pressed && styles.pressed]}
           >
             <Text style={styles.cheerLabel}>응원보내기</Text>
+          </Pressable>
+        ) : onDelete ? (
+          /* 내 글에는 응원 대신 삭제 버튼 */
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="내 글 삭제"
+            onPress={onDelete}
+            hitSlop={8}
+            style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
+          >
+            <Text style={styles.deleteLabel}>삭제</Text>
           </Pressable>
         ) : null}
       </View>
@@ -112,6 +132,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 15,
     color: colors.white,
+  },
+  deleteButton: {
+    height: 28,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteLabel: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 11,
+    lineHeight: 15,
+    color: colors.textSub,
   },
   photo: {
     width: '100%',

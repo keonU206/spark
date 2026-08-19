@@ -103,6 +103,15 @@ public class GroupController {
                 request.sessionId());
     }
 
+    /** 피드 글 삭제 — 작성자 본인만 */
+    @org.springframework.web.bind.annotation.DeleteMapping("/groups/{groupId}/feed/{postId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePost(@AuthenticationPrincipal Long userId,
+                           @PathVariable String groupId, @PathVariable String postId) {
+        groupService.deletePost(userId, parseGroupId(groupId),
+                parseId(postId, "POST_NOT_FOUND", "글을 찾을 수 없어요."));
+    }
+
     @PostMapping("/groups/{groupId}/feed/{postId}/comments")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createComment(@AuthenticationPrincipal Long userId,
