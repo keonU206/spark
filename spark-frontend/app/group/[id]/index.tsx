@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FeedPostCard } from '@/components/domain/FeedPostCard';
@@ -19,6 +20,7 @@ export default function GroupDetailScreen() {
 
   const { data, error, isPending, refetch } = useGroup(id);
   const cheer = useCheerPost(id);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   if (!id) return <ScreenError error={new Error('모임이 지정되지 않았어요.')} />;
   if (error) return <ScreenError error={error} onRetry={() => void refetch()} />;
@@ -60,9 +62,15 @@ export default function GroupDetailScreen() {
             </View>
           ))}
 
-          <View style={[styles.memberCard, styles.memberAdd]}>
+          {/* 멤버 추가 = 초대코드 공유. 별도 친구 요청 없이 코드가 유일한 통로다 */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="멤버 초대"
+            onPress={() => setInviteOpen(true)}
+            style={({ pressed }) => [styles.memberCard, styles.memberAdd, pressed && styles.pressed]}
+          >
             <Text style={styles.memberAddGlyph}>+</Text>
-          </View>
+          </Pressable>
         </ScrollView>
 
         <Text style={styles.sectionTitle}>모임 피드</Text>
@@ -72,6 +80,43 @@ export default function GroupDetailScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* 초대코드 모달 — 코드를 보여주고 공유 시트를 띄운다 */}
+      <Modal visible={inviteOpen} transparent animationType="fade">
+        <Pressable style={styles.inviteBackdrop} onPress={() => setInviteOpen(false)}>
+          <Pressable style={styles.inviteCard} onPress={() => undefined}>
+            <Text style={styles.inviteTitle}>친구 초대하기</Text>
+            <Text style={styles.inviteSubtitle}>
+              친구가 모임 참여 화면에서{'\n'}이 코드를 입력하면 함께할 수 있어요.
+            </Text>
+
+            <View style={styles.inviteCodeBox}>
+              <Text style={styles.inviteCode}>{data.summary.inviteCode ?? '--------'}</Text>
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                const code = data.summary.inviteCode;
+                if (!code) return;
+                // 웹 등 공유 시트가 없는 환경에서는 코드가 화면에 보이는 것으로 충분하다
+                Share.share({ message: `스파크 모임 초대코드: ${code}` }).catch(() => undefined);
+              }}
+              style={({ pressed }) => [styles.inviteShare, pressed && styles.pressed]}
+            >
+              <Text style={styles.inviteShareLabel}>공유하기</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setInviteOpen(false)}
+              style={({ pressed }) => [styles.inviteClose, pressed && styles.pressed]}
+            >
+              <Text style={styles.inviteCloseLabel}>닫기</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -152,5 +197,82 @@ const styles = StyleSheet.create({
   feed: {
     paddingHorizontal: 19,
     gap: 14,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  inviteBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  inviteCard: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 16,
+    backgroundColor: colors.white,
+    paddingVertical: 26,
+    paddingHorizontal: 22,
+    alignItems: 'center',
+  },
+  inviteTitle: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '800',
+    fontSize: 18,
+    lineHeight: 24,
+    color: colors.textMain,
+  },
+  inviteSubtitle: {
+    fontFamily: fontFamily.regular,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textSub,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  inviteCodeBox: {
+    marginTop: 18,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.bg,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+  },
+  inviteCode: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '800',
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: 4,
+    color: colors.main,
+  },
+  inviteShare: {
+    marginTop: 18,
+    width: '100%',
+    height: 45,
+    borderRadius: 23,
+    backgroundColor: colors.main,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inviteShareLabel: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '700',
+    fontSize: 15,
+    color: colors.white,
+  },
+  inviteClose: {
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  inviteCloseLabel: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 13,
+    color: colors.textSub,
   },
 });

@@ -136,6 +136,8 @@ export type GroupSummary = {
   memberCount: number;
   /** 예: "2일전" — 표기 문자열은 서버가 만든다 */
   lastActivityLabel: string;
+  /** 8자리 초대코드 — 멤버 추가(+)가 이 코드를 보여준다. mock에는 없을 수 있다 */
+  inviteCode?: string;
 };
 
 export type GroupMember = {
