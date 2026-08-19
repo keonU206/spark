@@ -1,0 +1,16 @@
+{
+  // Java 확장이 Expo prebuild 산출물(android/)을 Gradle 프로젝트로 열지 않게 한다.
+  // (내장 Java 25와 안드로이드용 Gradle 8.9가 호환되지 않아 경고가 반복됨)
+  // spark-backend는 계속 정상적으로 인식된다.
+  "java.import.exclusions": [
+    "**/node_modules/**",
+    "**/.metadata/**",
+    "**/archetype-resources/**",
+    "**/META-INF/maven/**",
+    "**/android/**",
+    "**/ios/**"
+  ],
+  // Gradle 확장도 같은 폴더를 무시한다
+  "gradle.nestedProjects": true,
+  "java.configuration.updateBuildConfiguration": "automatic"
+}
