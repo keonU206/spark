@@ -74,9 +74,25 @@ function toApiError(error: unknown): ApiError {
   return new ApiError(error instanceof Error ? error.message : String(error));
 }
 
+/**
+ * 401 처리자. AuthProvider가 "토큰을 지우고 로그인 화면으로" 를 등록한다.
+ * 저장된 토큰이 만료·무효(서버 초기화 등)일 때 다시시도 루프에 갇히지 않게 한다.
+ */
+let onUnauthorized: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler;
+}
+
 http.interceptors.response.use(
   (response) => response,
-  (error: unknown) => Promise.reject(toApiError(error)),
+  (error: unknown) => {
+    const apiError = toApiError(error);
+    if (apiError.status === 401) {
+      onUnauthorized?.();
+    }
+    return Promise.reject(apiError);
+  },
 );
 
 /** mock 경로에서도 같은 에러 타입을 쓰기 위해 노출한다 */

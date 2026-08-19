@@ -8,7 +8,7 @@ import {
   signUpWithEmail,
   type AuthSession,
 } from '@/services/api/auth';
-import { setAccessTokenProvider } from '@/services/http';
+import { setAccessTokenProvider, setUnauthorizedHandler } from '@/services/http';
 import { tokenStorage } from '@/services/tokenStorage';
 
 /**
@@ -54,6 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setAccessTokenProvider(() => accessToken);
   }, [accessToken]);
+
+  // 서버가 401을 주면(토큰 만료·무효) 세션을 정리해 라우트 가드가 로그인으로 보내게 한다
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      void tokenStorage.clear();
+      setAccessToken(null);
+      setSurveyCompleted(true);
+      setStatus('unauthenticated');
+      queryClient.clear();
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [queryClient]);
 
   // 앱 시작 시 저장된 토큰 복원
   useEffect(() => {
