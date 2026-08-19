@@ -8,8 +8,8 @@ import { BackButton } from '@/components/ui/BackButton';
 import { goBack } from '@/lib/navigation';
 import { FormField } from '@/components/ui/FormField';
 import { PillButton } from '@/components/ui/PillButton';
+import { useCreateGroup } from '@/hooks/queries';
 import { groupCreateSchema, limits, type GroupCreateForm } from '@/lib/validation';
-import { createGroup } from '@/services/api/group';
 import { colors, fontFamily } from '@/theme/tokens';
 
 const MAX_LENGTH = limits.GROUP_NAME_MAX_LENGTH;
@@ -28,9 +28,12 @@ export default function CreateGroupScreen() {
   // 카운터에 쓸 현재 입력값
   const name = useWatch({ control, name: 'name' }) ?? '';
 
+  const create = useCreateGroup();
+
   const onSubmit = handleSubmit(async (values) => {
     try {
-      const group = await createGroup(values.name);
+      // mutation을 거쳐야 모임 목록·친구·홈 캐시가 무효화된다
+      const group = await create.mutateAsync(values.name);
       router.replace(`/group/${group.id}`);
     } catch (e: unknown) {
       setError('name', { message: e instanceof Error ? e.message : String(e) });

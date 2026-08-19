@@ -8,8 +8,8 @@ import { BackButton } from '@/components/ui/BackButton';
 import { goBack } from '@/lib/navigation';
 import { FormField } from '@/components/ui/FormField';
 import { PillButton } from '@/components/ui/PillButton';
+import { useJoinGroup } from '@/hooks/queries';
 import { groupJoinSchema, limits, type GroupJoinForm } from '@/lib/validation';
-import { joinGroup } from '@/services/api/group';
 import { colors, fontFamily } from '@/theme/tokens';
 
 const CODE_LENGTH = limits.INVITE_CODE_LENGTH;
@@ -28,9 +28,12 @@ export default function JoinGroupScreen() {
     defaultValues: { inviteCode: '' },
   });
 
+  const join = useJoinGroup();
+
   const onSubmit = handleSubmit(async (values) => {
     try {
-      const group = await joinGroup(values.inviteCode);
+      // mutation을 거쳐야 모임 목록·친구·홈 캐시가 무효화된다
+      const group = await join.mutateAsync(values.inviteCode);
       router.replace(`/group/${group.id}`);
     } catch (e: unknown) {
       setError('inviteCode', { message: e instanceof Error ? e.message : String(e) });

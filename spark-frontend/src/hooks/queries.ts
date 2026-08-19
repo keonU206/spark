@@ -8,10 +8,12 @@ import {
 import {
   cheerPost,
   createFeedPost,
+  createGroup,
   getFriendActivities,
   getGroup,
   getGroupStatus,
   getMyGroups,
+  joinGroup,
   sendNudge,
 } from '@/services/api/group';
 import { getHome } from '@/services/api/home';
@@ -136,6 +138,9 @@ export function useCompleteSession() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
       void queryClient.invalidateQueries({ queryKey: ['stats'] });
+      // 운동하면 배지 진행도와 마이의 이번 달 완료 수도 바뀐다
+      void queryClient.invalidateQueries({ queryKey: queryKeys.badges });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.me });
     },
   });
 }
@@ -180,6 +185,38 @@ export function useGroupStatus(id: string | undefined) {
   });
 }
 
+/**
+ * 모임 목록·친구·홈은 멤버십이 바뀌면 전부 다시 불러와야 한다.
+ * 탭 화면은 계속 마운트돼 있어 무효화 없이는 이전 목록이 그대로 보인다.
+ */
+function useInvalidateMembership() {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ['groups'] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.friendActivities });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.home });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.me });
+  };
+}
+
+/** 모임 만들기 */
+export function useCreateGroup() {
+  const invalidate = useInvalidateMembership();
+  return useMutation({
+    mutationFn: (name: string) => createGroup(name),
+    onSuccess: invalidate,
+  });
+}
+
+/** 초대코드로 참여하기 */
+export function useJoinGroup() {
+  const invalidate = useInvalidateMembership();
+  return useMutation({
+    mutationFn: (inviteCode: string) => joinGroup(inviteCode),
+    onSuccess: invalidate,
+  });
+}
+
 /** 재촉하기 — 성공하면 친구·모임 현황을 다시 불러온다 */
 export function useSendNudge() {
   const queryClient = useQueryClient();
@@ -189,6 +226,8 @@ export function useSendNudge() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.friendActivities });
       void queryClient.invalidateQueries({ queryKey: ['groups'] });
+      // 홈의 친구 현황에도 canNudge(재촉 버튼)가 있다
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home });
     },
   });
 }
