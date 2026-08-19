@@ -4,7 +4,7 @@ server:
 
 spring:
   datasource:
-    # 로컬 기본값(XAMPP MariaDB). 배포 환경에서는 환경변수로 덮어쓴다
+    # 로컬 기본값(MariaDB). 배포 환경에서는 환경변수로 덮어쓴다
     url: ${DB_URL:jdbc:mariadb://localhost:3306/spark}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:1234}
@@ -17,6 +17,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # MariaDB 10.4는 ALTER TABLE IF EXISTS(10.5+)를 몰라 스키마 갱신이 조용히 실패한다
+        dialect: com.spark.backend.config.LegacyMariaDbDialect
   jackson:
     time-zone: Asia/Seoul
   servlet:
