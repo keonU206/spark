@@ -3,13 +3,15 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CheerModal } from '@/components/domain/CheerModal';
 import { FeedPostCard } from '@/components/domain/FeedPostCard';
 import { GroupCard } from '@/components/domain/GroupCard';
 import { BackButton } from '@/components/ui/BackButton';
 import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
-import { useCheerPost, useGroup } from '@/hooks/queries';
+import { useAddComment, useGroup } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
+import type { FeedPost } from '@/types/api';
 
 /**
  * 모임 상세 — Figma `87:813`
@@ -20,8 +22,10 @@ export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const { data, error, isPending, refetch } = useGroup(id);
-  const cheer = useCheerPost(id);
+  const comment = useAddComment(id);
   const [inviteOpen, setInviteOpen] = useState(false);
+  /** 응원 보내기 모달이 열려 있는 대상 글 */
+  const [cheerTarget, setCheerTarget] = useState<FeedPost | null>(null);
 
   if (!id) return <ScreenError error={new Error('모임이 지정되지 않았어요.')} />;
   if (error) return <ScreenError error={error} onRetry={() => void refetch()} />;
@@ -77,10 +81,26 @@ export default function GroupDetailScreen() {
         <Text style={styles.sectionTitle}>모임 피드</Text>
         <View style={styles.feed}>
           {data.feed.map((post) => (
-            <FeedPostCard key={post.id} post={post} onCheer={() => cheer.mutate(post.id)} />
+            <FeedPostCard key={post.id} post={post} onCheer={() => setCheerTarget(post)} />
           ))}
         </View>
       </ScrollView>
+
+      {/* 응원 보내기 — 프리셋 문구를 고르거나 직접 입력해 글에 단다 (Frame 1000001151) */}
+      {cheerTarget ? (
+        <CheerModal
+          visible
+          authorNickname={cheerTarget.author.nickname}
+          sending={comment.isPending}
+          onClose={() => setCheerTarget(null)}
+          onSend={(message) => {
+            comment.mutate(
+              { postId: cheerTarget.id, body: message },
+              { onSuccess: () => setCheerTarget(null) },
+            );
+          }}
+        />
+      ) : null}
 
       {/* 초대코드 모달 — 코드를 보여주고 공유 시트를 띄운다 */}
       <Modal visible={inviteOpen} transparent animationType="fade">

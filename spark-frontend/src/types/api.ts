@@ -184,6 +184,8 @@ export type GroupDayAttendance = {
   day: number;
   /** 0~1. 0이면 칠하지 않는다 */
   intensity: number;
+  /** 그날 운동한 멤버 닉네임 — 날짜를 누르면 보여준다. mock에는 없을 수 있다 */
+  members?: string[];
 };
 
 export type GroupMemberStatus = {

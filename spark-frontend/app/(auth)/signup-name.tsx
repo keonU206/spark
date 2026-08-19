@@ -54,7 +54,7 @@ export default function SignupNameScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={{ paddingTop: insets.top + 37 }}>
-        <BackButton onPress={() => goBack('/signup')} />
+        <BackButton align="top" onPress={() => goBack('/signup')} />
       </View>
 
       <ScrollView

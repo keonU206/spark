@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import { colors, fontFamily } from '@/theme/tokens';
 import type { GroupDayAttendance } from '@/types/api';
@@ -68,10 +68,13 @@ function buildWeeks(year: number, month: number): (number | null)[][] {
 export function MonthCalendar({
   month,
   days,
+  onDayPress,
 }: {
   /** "2026-07" */
   month: string;
   days: GroupDayAttendance[];
+  /** 출석이 있는 날짜를 눌렀을 때 (모임 화면: 운동한 멤버 팝업) */
+  onDayPress?: (day: GroupDayAttendance) => void;
 }) {
   const { width } = useWindowDimensions();
   const cellWidth = width / 7;
@@ -79,8 +82,8 @@ export function MonthCalendar({
   const [yearText, monthText] = month.split('-');
   const weeks = buildWeeks(Number(yearText), Number(monthText));
 
-  const byDay = new Map(days.map((d) => [d.day, d.intensity]));
-  const intensityOf = (day: number) => byDay.get(day) ?? 0;
+  const byDay = new Map(days.map((d) => [d.day, d]));
+  const intensityOf = (day: number) => byDay.get(day)?.intensity ?? 0;
 
   return (
     <View>
@@ -108,13 +111,26 @@ export function MonthCalendar({
             />
           ))}
 
-          {cells.map((day, i) => (
-            <View key={i} style={[styles.cell, { width: cellWidth }]}>
-              {day !== null ? (
-                <Text style={[styles.day, intensityOf(day) >= 0.6 && styles.dayOnFill]}>{day}</Text>
-              ) : null}
-            </View>
-          ))}
+          {cells.map((day, i) => {
+            const attendance = day !== null ? byDay.get(day) : undefined;
+            const pressable = !!onDayPress && !!attendance;
+            return (
+              <Pressable
+                key={i}
+                disabled={!pressable}
+                accessibilityRole={pressable ? 'button' : undefined}
+                accessibilityLabel={pressable ? `${day}일 운동한 멤버 보기` : undefined}
+                onPress={() => attendance && onDayPress?.(attendance)}
+                style={[styles.cell, { width: cellWidth }]}
+              >
+                {day !== null ? (
+                  <Text style={[styles.day, intensityOf(day) >= 0.6 && styles.dayOnFill]}>
+                    {day}
+                  </Text>
+                ) : null}
+              </Pressable>
+            );
+          })}
         </View>
       ))}
     </View>

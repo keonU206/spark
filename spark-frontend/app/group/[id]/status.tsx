@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FriendRow } from '@/components/domain/FriendRow';
@@ -11,6 +11,7 @@ import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useGroupStatus, useSendNudge } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
+import type { GroupDayAttendance } from '@/types/api';
 
 function shiftMonth(month: string, delta: number) {
   const [year, m] = month.split('-').map(Number);
@@ -34,6 +35,8 @@ export default function GroupStatusScreen() {
   const { data, error, isPending, refetch } = useGroupStatus(id);
   const nudge = useSendNudge();
   const [pickedMonth, setPickedMonth] = useState<string>();
+  /** 캘린더에서 누른 날 — "운동한 멤버" 팝업 */
+  const [pickedDay, setPickedDay] = useState<GroupDayAttendance | null>(null);
 
   if (!id) return <ScreenError error={new Error('모임이 지정되지 않았어요.')} />;
   if (error) return <ScreenError error={error} onRetry={() => void refetch()} />;
@@ -92,7 +95,11 @@ export default function GroupStatusScreen() {
           </Pressable>
         </View>
 
-        <MonthCalendar month={month} days={showingLoadedMonth ? data.attendance.days : []} />
+        <MonthCalendar
+          month={month}
+          days={showingLoadedMonth ? data.attendance.days : []}
+          onDayPress={setPickedDay}
+        />
 
         <View style={styles.memberSection}>
           <Text style={styles.memberTitle}>구성원 운동 현황</Text>
@@ -116,6 +123,38 @@ export default function GroupStatusScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* 캘린더 날짜를 누르면 그날 운동한 멤버를 보여준다 (시안 "운동한 멤버" 팝업) */}
+      <Modal visible={pickedDay !== null} transparent animationType="fade">
+        <Pressable style={styles.dayBackdrop} onPress={() => setPickedDay(null)}>
+          <Pressable style={styles.dayCard} onPress={() => undefined}>
+            <Text style={styles.dayTitle}>{`${Number(month.split('-')[1])}월 ${pickedDay?.day}일 운동한 멤버`}</Text>
+
+            {(pickedDay?.members ?? []).length > 0 ? (
+              <View style={styles.dayMembers}>
+                {(pickedDay?.members ?? []).map((nickname) => (
+                  <View key={nickname} style={styles.dayMember}>
+                    <View style={styles.dayMemberAvatar} />
+                    <Text style={styles.dayMemberName} numberOfLines={1}>
+                      {nickname}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.dayEmpty}>이날 운동한 멤버 정보가 없어요.</Text>
+            )}
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setPickedDay(null)}
+              style={({ pressed }) => [styles.dayClose, pressed && styles.pressed]}
+            >
+              <Text style={styles.dayCloseLabel}>닫기</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -124,6 +163,72 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  dayBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  dayCard: {
+    width: '100%',
+    maxWidth: 300,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+  },
+  dayTitle: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '800',
+    fontSize: 16,
+    lineHeight: 22,
+    color: colors.textMain,
+  },
+  dayMembers: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 14,
+    marginTop: 16,
+  },
+  dayMember: {
+    alignItems: 'center',
+    width: 64,
+  },
+  dayMemberAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.cardBorder,
+  },
+  dayMemberName: {
+    fontFamily: fontFamily.regular,
+    fontSize: 12,
+    lineHeight: 16,
+    color: colors.textMain,
+    marginTop: 6,
+    maxWidth: 64,
+  },
+  dayEmpty: {
+    fontFamily: fontFamily.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSub,
+    marginTop: 14,
+  },
+  dayClose: {
+    marginTop: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+  },
+  dayCloseLabel: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 14,
+    color: colors.textSub,
   },
   header: {
     backgroundColor: colors.white,

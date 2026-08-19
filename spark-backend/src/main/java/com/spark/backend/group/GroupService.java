@@ -150,16 +150,19 @@ public class GroupService {
         YearMonth month = YearMonth.now();
 
         // intensity = 그날 운동한 멤버 수 ÷ 전체 멤버 수 (0이면 칠하지 않으므로 내려주지 않는다)
-        Map<Integer, Integer> dayCounts = new HashMap<>();
-        for (Long memberId : users.keySet()) {
-            statsEngine.completedDaysOfMonth(memberId, month)
-                    .forEach(day -> dayCounts.merge(day, 1, Integer::sum));
+        // 날짜를 누르면 누가 운동했는지 보여줄 수 있게 멤버 이름도 함께 모은다
+        Map<Integer, List<String>> dayMembers = new HashMap<>();
+        for (User member : users.values()) {
+            statsEngine.completedDaysOfMonth(member.getId(), month)
+                    .forEach(day -> dayMembers.computeIfAbsent(day, k -> new java.util.ArrayList<>())
+                            .add(member.getNickname()));
         }
         int total = Math.max(users.size(), 1);
-        List<GroupDayAttendanceResponse> days = dayCounts.entrySet().stream()
+        List<GroupDayAttendanceResponse> days = dayMembers.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(e -> new GroupDayAttendanceResponse(e.getKey(),
-                        Math.round(e.getValue() * 100.0 / total) / 100.0))
+                        Math.round(e.getValue().size() * 100.0 / total) / 100.0,
+                        List.copyOf(e.getValue())))
                 .toList();
 
         List<GroupMemberStatusResponse> members = users.values().stream()

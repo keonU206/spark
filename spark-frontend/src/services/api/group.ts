@@ -89,6 +89,18 @@ export async function createFeedPost(input: {
   await http.post(`/groups/${input.groupId}/feed`, { body: input.body });
 }
 
+/** `POST /groups/{groupId}/feed/{postId}/comments` — 응원 문구 달기 (피드에 댓글로 표시) */
+export async function addComment(groupId: string, postId: string, body: string): Promise<void> {
+  if (USE_MOCK) {
+    void groupId;
+    void postId;
+    void body;
+    await delay(undefined);
+    return;
+  }
+  await http.post(`/groups/${groupId}/feed/${postId}/comments`, { body });
+}
+
 /** `POST /groups/{groupId}/feed/{postId}/cheer` — 응원 보내기 (다시 누르면 취소) */
 export async function cheerPost(groupId: string, postId: string): Promise<void> {
   if (USE_MOCK) {

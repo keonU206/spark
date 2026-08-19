@@ -90,7 +90,12 @@ public final class GroupDtos {
     ) {
     }
 
-    public record GroupDayAttendanceResponse(int day, double intensity) {
+    public record GroupDayAttendanceResponse(
+            int day,
+            double intensity,
+            /** 그날 운동한 멤버 닉네임 — 캘린더 날짜를 누르면 보여준다 */
+            List<String> members
+    ) {
     }
 
     public record GroupAttendanceResponse(String month, List<GroupDayAttendanceResponse> days) {

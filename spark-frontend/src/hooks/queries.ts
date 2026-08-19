@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 
 import {
+  addComment,
   cheerPost,
   createFeedPost,
   createGroup,
@@ -299,6 +300,19 @@ export function useShareToFeed() {
       createFeedPost(input),
     onSuccess: (_data, input) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.group(input.groupId) });
+    },
+  });
+}
+
+/** 응원 문구 보내기 — 피드 글에 댓글로 달린다 */
+export function useAddComment(groupId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ postId, body }: { postId: string; body: string }) =>
+      addComment(groupId as string, postId, body),
+    onSuccess: () => {
+      if (groupId) void queryClient.invalidateQueries({ queryKey: queryKeys.group(groupId) });
     },
   });
 }
