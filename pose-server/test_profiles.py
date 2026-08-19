@@ -1,0 +1,30 @@
+from main import LANDMARK, PROFILES, Landmark, _visible, calculate_metrics
+
+
+def landmarks(names: tuple[str, ...], hidden: tuple[str, ...] = ()) -> list[Landmark]:
+    return [
+        Landmark(index=LANDMARK[name], x=0.1 + i * 0.05, y=0.1 + i * 0.04, z=0, visibility=0.1 if name in hidden else 0.9)
+        for i, name in enumerate(names)
+    ]
+
+
+def test_all_demo_exercises_have_profiles() -> None:
+    assert set(PROFILES) == {"squat", "lunge", "chin_tuck", "shoulder_roll", "chest_opener", "side_bend"}
+
+
+def test_chin_tuck_needs_only_one_visible_ear() -> None:
+    names = ("NOSE", "LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_EAR", "RIGHT_EAR")
+    assert _visible(landmarks(names, ("RIGHT_EAR",)), PROFILES["chin_tuck"])
+    assert not _visible(landmarks(names, ("LEFT_EAR", "RIGHT_EAR")), PROFILES["chin_tuck"])
+
+
+def test_squat_needs_all_eight_joints() -> None:
+    assert _visible(landmarks(PROFILES["squat"].required), PROFILES["squat"])
+    assert not _visible(landmarks(PROFILES["squat"].required[:-1]), PROFILES["squat"])
+
+
+def test_each_metric_shape_matches_frontend_contract() -> None:
+    for exercise_type, profile in PROFILES.items():
+        names = profile.display_names
+        result = calculate_metrics(landmarks(names), exercise_type)
+        assert len(result) == (4 if exercise_type in ("squat", "lunge") else 1)
