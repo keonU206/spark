@@ -10,7 +10,7 @@ export type ExerciseType =
   | 'chest_opener'
   | 'side_bend';
 
-type AiLandmark = {
+export type AiLandmark = {
   index: number;
   x: number;
   y: number;
