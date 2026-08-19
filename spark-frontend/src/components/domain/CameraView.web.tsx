@@ -20,6 +20,7 @@ export function CameraView({
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,10 +70,11 @@ export function CameraView({
     const timer = setInterval(() => {
       const video = videoRef.current;
       if (!video || video.readyState < 2 || !video.videoWidth) return;
-      const canvas = document.createElement('canvas');
+      const canvas = canvasRef.current ?? document.createElement('canvas');
+      canvasRef.current = canvas;
       canvas.width = 512;
       canvas.height = Math.round((video.videoHeight / video.videoWidth) * 512);
-      const context = canvas.getContext('2d');
+      const context = canvas.getContext('2d', { willReadFrequently: true });
       if (!context) return;
       // 화면의 전면 카메라 미러링과 분석 이미지 좌표를 일치시킨다.
       context.translate(canvas.width, 0);

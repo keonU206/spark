@@ -8,6 +8,7 @@ import os
 import subprocess
 import tempfile
 import threading
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 import cv2
@@ -144,6 +145,7 @@ import mediapipe as mp  # noqa: E402
 
 class Detector:
     def __init__(self) -> None:
+        self._lock = threading.Lock()
         self.pose = mp.solutions.pose.Pose(
             static_image_mode=False,
             model_complexity=1,
@@ -153,7 +155,10 @@ class Detector:
         )
 
     def detect(self, rgb: np.ndarray) -> list[Landmark]:
-        result = self.pose.process(rgb)
+        # MediaPipe Pose is stateful and not thread-safe. Serializing its short
+        # inference section prevents corrupted tracking state under concurrent calls.
+        with self._lock:
+            result = self.pose.process(rgb)
         if not result.pose_landmarks:
             return []
         return [
@@ -162,15 +167,17 @@ class Detector:
         ]
 
 
-_local = threading.local()
+_detector: Detector | None = None
+_detector_creation_lock = threading.Lock()
 
 
 def get_detector() -> Detector:
-    detector = getattr(_local, "detector", None)
-    if detector is None:
-        detector = Detector()
-        _local.detector = detector
-    return detector
+    global _detector
+    if _detector is None:
+        with _detector_creation_lock:
+            if _detector is None:
+                _detector = Detector()
+    return _detector
 
 
 def _visible(landmarks: list[Landmark], profile: Profile) -> bool:
@@ -260,7 +267,14 @@ def _decode_image(value: str) -> np.ndarray | None:
     return cv2.imdecode(data, cv2.IMREAD_COLOR)
 
 
-app = FastAPI(title="Spark Pose Server", version="1.0.0")
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Load the model before health checks pass so the first demo frame is not slow.
+    get_detector()
+    yield
+
+
+app = FastAPI(title="Spark Pose Server", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

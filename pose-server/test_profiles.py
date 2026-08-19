@@ -1,3 +1,4 @@
+import main
 from main import LANDMARK, PROFILES, Landmark, _visible, calculate_metrics
 
 
@@ -30,3 +31,16 @@ def test_each_metric_shape_matches_frontend_contract() -> None:
         names = profile.display_names
         result = calculate_metrics(landmarks(names), exercise_type)
         assert len(result) == (4 if exercise_type in ("squat", "lunge") else 1)
+
+
+def test_detector_is_reused(monkeypatch) -> None:
+    created = []
+
+    class FakeDetector:
+        def __init__(self) -> None:
+            created.append(self)
+
+    monkeypatch.setattr(main, "Detector", FakeDetector)
+    monkeypatch.setattr(main, "_detector", None)
+    assert main.get_detector() is main.get_detector()
+    assert len(created) == 1
