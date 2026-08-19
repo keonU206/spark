@@ -70,17 +70,17 @@ export function CameraView({
       const video = videoRef.current;
       if (!video || video.readyState < 2 || !video.videoWidth) return;
       const canvas = document.createElement('canvas');
-      canvas.width = 480;
-      canvas.height = Math.round((video.videoHeight / video.videoWidth) * 480);
+      canvas.width = 512;
+      canvas.height = Math.round((video.videoHeight / video.videoWidth) * 512);
       const context = canvas.getContext('2d');
       if (!context) return;
       // 화면의 전면 카메라 미러링과 분석 이미지 좌표를 일치시킨다.
       context.translate(canvas.width, 0);
       context.scale(-1, 1);
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const base64 = canvas.toDataURL('image/jpeg', 0.45).split(',')[1];
+      const base64 = canvas.toDataURL('image/jpeg', 0.65).split(',')[1];
       if (base64) onFrame(base64);
-    }, 500);
+    }, 350);
     return () => clearInterval(timer);
   }, [isActive, onFrame]);
 

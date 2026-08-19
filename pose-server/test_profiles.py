@@ -18,9 +18,11 @@ def test_chin_tuck_needs_only_one_visible_ear() -> None:
     assert not _visible(landmarks(names, ("LEFT_EAR", "RIGHT_EAR")), PROFILES["chin_tuck"])
 
 
-def test_squat_needs_all_eight_joints() -> None:
-    assert _visible(landmarks(PROFILES["squat"].required), PROFILES["squat"])
-    assert not _visible(landmarks(PROFILES["squat"].required[:-1]), PROFILES["squat"])
+def test_squat_accepts_one_complete_visible_leg() -> None:
+    profile = PROFILES["squat"]
+    left_side = (*profile.required, "LEFT_KNEE", "LEFT_ANKLE")
+    assert _visible(landmarks(left_side), profile)
+    assert not _visible(landmarks(profile.required), profile)
 
 
 def test_each_metric_shape_matches_frontend_contract() -> None:

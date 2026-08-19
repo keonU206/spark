@@ -32,6 +32,7 @@ LANDMARK = {
 class Profile:
     required: tuple[str, ...]
     required_any: tuple[tuple[str, ...], ...] = ()
+    required_one_set: tuple[tuple[str, ...], ...] = ()
     display_only: tuple[str, ...] = ()
     visibility: float = 0.5
 
@@ -39,6 +40,8 @@ class Profile:
     def display_names(self) -> tuple[str, ...]:
         names = [*self.required, *self.display_only]
         for group in self.required_any:
+            names.extend(group)
+        for group in self.required_one_set:
             names.extend(group)
         return tuple(dict.fromkeys(names))
 
@@ -49,8 +52,26 @@ LOWER_BODY = (
 )
 
 PROFILES = {
-    "squat": Profile(LOWER_BODY, visibility=0.55),
-    "lunge": Profile(LOWER_BODY, visibility=0.55),
+    # A slightly angled camera can hide the far ankle. One complete leg chain is
+    # enough; the less reliable side is repaired from the visible side below.
+    "squat": Profile(
+        ("LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"),
+        required_one_set=(
+            ("LEFT_HIP", "LEFT_KNEE", "LEFT_ANKLE"),
+            ("RIGHT_HIP", "RIGHT_KNEE", "RIGHT_ANKLE"),
+        ),
+        display_only=LOWER_BODY,
+        visibility=0.45,
+    ),
+    "lunge": Profile(
+        ("LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_HIP", "RIGHT_HIP"),
+        required_one_set=(
+            ("LEFT_HIP", "LEFT_KNEE", "LEFT_ANKLE"),
+            ("RIGHT_HIP", "RIGHT_KNEE", "RIGHT_ANKLE"),
+        ),
+        display_only=LOWER_BODY,
+        visibility=0.45,
+    ),
     "chin_tuck": Profile(
         ("NOSE", "LEFT_SHOULDER", "RIGHT_SHOULDER"),
         required_any=(("LEFT_EAR", "RIGHT_EAR"),),
@@ -126,8 +147,9 @@ class Detector:
         self.pose = mp.solutions.pose.Pose(
             static_image_mode=False,
             model_complexity=1,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
+            smooth_landmarks=True,
+            min_detection_confidence=0.45,
+            min_tracking_confidence=0.45,
         )
 
     def detect(self, rgb: np.ndarray) -> list[Landmark]:
@@ -160,6 +182,9 @@ def _visible(landmarks: list[Landmark], profile: Profile) -> bool:
 
     return all(valid(name) for name in profile.required) and all(
         any(valid(name) for name in group) for group in profile.required_any
+    ) and (
+        not profile.required_one_set
+        or any(all(valid(name) for name in group) for group in profile.required_one_set)
     )
 
 
@@ -183,12 +208,26 @@ def calculate_metrics(landmarks: list[Landmark], exercise_type: str) -> list[flo
     point = lambda name: by_index[LANDMARK[name]]
 
     if exercise_type in ("squat", "lunge"):
-        return [
-            round(_angle(point("LEFT_HIP"), point("LEFT_KNEE"), point("LEFT_ANKLE")), 2),
-            round(_angle(point("RIGHT_HIP"), point("RIGHT_KNEE"), point("RIGHT_ANKLE")), 2),
-            round(_angle(point("LEFT_SHOULDER"), point("LEFT_HIP"), point("LEFT_KNEE")), 2),
-            round(_angle(point("RIGHT_SHOULDER"), point("RIGHT_HIP"), point("RIGHT_KNEE")), 2),
-        ]
+        left_reliability = min(
+            point("LEFT_HIP").visibility,
+            point("LEFT_KNEE").visibility,
+            point("LEFT_ANKLE").visibility,
+        )
+        right_reliability = min(
+            point("RIGHT_HIP").visibility,
+            point("RIGHT_KNEE").visibility,
+            point("RIGHT_ANKLE").visibility,
+        )
+        left_knee = _angle(point("LEFT_HIP"), point("LEFT_KNEE"), point("LEFT_ANKLE"))
+        right_knee = _angle(point("RIGHT_HIP"), point("RIGHT_KNEE"), point("RIGHT_ANKLE"))
+        left_hip = _angle(point("LEFT_SHOULDER"), point("LEFT_HIP"), point("LEFT_KNEE"))
+        right_hip = _angle(point("RIGHT_SHOULDER"), point("RIGHT_HIP"), point("RIGHT_KNEE"))
+        # Prevent a hallucinated far-side ankle from creating a false repetition.
+        if left_reliability < 0.45 <= right_reliability:
+            left_knee, left_hip = right_knee, right_hip
+        elif right_reliability < 0.45 <= left_reliability:
+            right_knee, right_hip = left_knee, left_hip
+        return [round(left_knee, 2), round(right_knee, 2), round(left_hip, 2), round(right_hip, 2)]
 
     left_shoulder, right_shoulder = _point(by_index, "LEFT_SHOULDER"), _point(by_index, "RIGHT_SHOULDER")
     shoulder_mid = ((left_shoulder[0] + right_shoulder[0]) / 2, (left_shoulder[1] + right_shoulder[1]) / 2)

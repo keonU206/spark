@@ -20,9 +20,19 @@ type MovementState = {
   phase: 'ready' | 'active';
   activeFrames: number;
   neutralMetric: number | null;
+  recentMetrics: number[];
 };
 
-const INITIAL_MOVEMENT: MovementState = { phase: 'ready', activeFrames: 0, neutralMetric: null };
+const newMovementState = (): MovementState => ({
+  phase: 'ready', activeFrames: 0, neutralMetric: null, recentMetrics: [],
+});
+
+function smoothMetric(state: MovementState, metric: number) {
+  state.recentMetrics.push(metric);
+  if (state.recentMetrics.length > 3) state.recentMetrics.shift();
+  const sorted = [...state.recentMetrics].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)] ?? metric;
+}
 
 function metricFor(type: ExerciseType, angles?: number[] | null): number | null {
   if (!angles?.length) return null;
@@ -86,13 +96,13 @@ export function useWorkoutAnalysis({ enabled, exercise }: { enabled: boolean; ex
   const [feedback, setFeedback] = useState('카메라에 몸이 잘 보이도록 서주세요.');
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<WorkoutAnalysisReport | null>(null);
-  const movement = useRef<MovementState>({ ...INITIAL_MOVEMENT });
+  const movement = useRef<MovementState>(newMovementState());
   const currentRep = useRef<RepMeasurement | null>(null);
   const reportBuilder = useRef(new WorkoutReportBuilder(type));
   const busy = useRef(false);
 
   useEffect(() => {
-    movement.current = { ...INITIAL_MOVEMENT };
+    movement.current = newMovementState();
     setRepCount(0);
     setPose(null);
     setError(null);
@@ -114,10 +124,11 @@ export function useWorkoutAnalysis({ enabled, exercise }: { enabled: boolean; ex
       }
       setError(null);
       setPose(toPose(result.landmarks));
-      const metric = metricFor(type, result.angles);
-      if (metric == null) return;
+      const rawMetric = metricFor(type, result.angles);
+      if (rawMetric == null) return;
 
       const state = movement.current;
+      const metric = smoothMetric(state, rawMetric);
       if (type === 'chin_tuck' && state.neutralMetric == null) {
         if (metric >= 0.12) {
           state.neutralMetric = metric;
@@ -172,7 +183,7 @@ export function useWorkoutAnalysis({ enabled, exercise }: { enabled: boolean; ex
 
   const finishAnalysis = useCallback(() => reportBuilder.current.build(), []);
   const resetAnalysis = useCallback(() => {
-    movement.current = { ...INITIAL_MOVEMENT };
+    movement.current = newMovementState();
     currentRep.current = null;
     reportBuilder.current.reset(type);
     setRepCount(0);
