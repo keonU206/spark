@@ -2,6 +2,7 @@ package com.spark.backend.session;
 
 import com.spark.backend.common.error.ApiException;
 import com.spark.backend.session.dto.SessionDtos.CompleteSessionRequest;
+import com.spark.backend.session.dto.SessionDtos.AnalysisReportRequest;
 import com.spark.backend.session.dto.SessionDtos.SessionResultResponse;
 import com.spark.backend.session.dto.SessionDtos.StartSessionRequest;
 import com.spark.backend.session.dto.SessionDtos.StartSessionResponse;
@@ -34,7 +35,8 @@ public class SessionController {
     public SessionResultResponse complete(@AuthenticationPrincipal Long userId, @PathVariable String id,
                                           @RequestBody(required = false) CompleteSessionRequest request) {
         List<String> skipped = request != null ? request.skippedExerciseIds() : null;
-        return sessionService.complete(userId, parseId(id), skipped);
+        List<AnalysisReportRequest> reports = request != null ? request.analysisReports() : null;
+        return sessionService.complete(userId, parseId(id), skipped, reports);
     }
 
     @PostMapping("/{id}/abort")

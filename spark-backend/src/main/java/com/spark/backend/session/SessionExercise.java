@@ -47,6 +47,19 @@ public class SessionExercise {
     @Column(nullable = false, length = 20)
     private Status status;
 
+    /** AI PT가 지원되는 운동만 값이 채워진다. */
+    private Integer analysisScore;
+
+    private Integer analyzedReps;
+
+    private Integer validReps;
+
+    @Column(length = 500)
+    private String analysisSummary;
+
+    @Column(columnDefinition = "TEXT")
+    private String analysisIssues;
+
     @Builder
     private SessionExercise(WorkoutSession session, String exerciseId, String exerciseName, int orderIndex) {
         this.session = session;
@@ -62,5 +75,14 @@ public class SessionExercise {
 
     public void markSkipped() {
         this.status = Status.SKIPPED;
+    }
+
+    public void applyAnalysis(Integer score, Integer totalReps, Integer validReps,
+                              String summary, java.util.List<String> issues) {
+        this.analysisScore = score;
+        this.analyzedReps = totalReps;
+        this.validReps = validReps;
+        this.analysisSummary = summary;
+        this.analysisIssues = issues == null ? null : String.join("\n", issues);
     }
 }

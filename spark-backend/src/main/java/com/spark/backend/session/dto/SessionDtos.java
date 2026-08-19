@@ -17,8 +17,21 @@ public final class SessionDtos {
     public record StartSessionResponse(String sessionId) {
     }
 
-    /** 프론트는 아직 body 없이 호출한다 — skippedExerciseIds는 선택 확장 */
-    public record CompleteSessionRequest(List<String> skippedExerciseIds) {
+    /** body 없이 호출해도 동작하며, AI 분석 결과가 있으면 운동별 기록에 함께 저장한다. */
+    public record CompleteSessionRequest(
+            List<String> skippedExerciseIds,
+            List<AnalysisReportRequest> analysisReports
+    ) {
+    }
+
+    public record AnalysisReportRequest(
+            String exerciseId,
+            Integer score,
+            Integer totalReps,
+            Integer validReps,
+            String summary,
+            List<String> issues
+    ) {
     }
 
     public record SessionExerciseResult(String exerciseId, String name, String status) {

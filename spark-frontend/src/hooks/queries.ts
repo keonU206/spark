@@ -141,7 +141,10 @@ export function useCompleteSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (sessionId: string) => completeSession(sessionId),
+    mutationFn: ({ sessionId, analysisResults }: {
+      sessionId: string;
+      analysisResults?: import('@/services/workoutReport').ExerciseAnalysisResult[];
+    }) => completeSession(sessionId, analysisResults),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
       void queryClient.invalidateQueries({ queryKey: ['stats'] });

@@ -7,6 +7,7 @@ import com.spark.backend.exercise.ExerciseRepository;
 import com.spark.backend.exercise.Routine;
 import com.spark.backend.exercise.RoutineRepository;
 import com.spark.backend.session.dto.SessionDtos.SessionExerciseResult;
+import com.spark.backend.session.dto.SessionDtos.AnalysisReportRequest;
 import com.spark.backend.session.dto.SessionDtos.SessionResultResponse;
 import com.spark.backend.session.dto.SessionDtos.StartSessionResponse;
 import com.spark.backend.stats.StatsEngine;
@@ -66,7 +67,8 @@ public class SessionService {
      * 응답의 monthly 블록이 루틴 완료 모달에 그대로 표시된다.
      */
     @Transactional
-    public SessionResultResponse complete(Long userId, Long sessionId, List<String> skippedExerciseIds) {
+    public SessionResultResponse complete(Long userId, Long sessionId, List<String> skippedExerciseIds,
+                                          List<AnalysisReportRequest> analysisReports) {
         WorkoutSession session = findOwnSession(userId, sessionId);
         if (!session.isInProgress()) {
             throw new ApiException(HttpStatus.CONFLICT, "SESSION_ALREADY_CLOSED", "이미 끝난 운동이에요.");
@@ -77,6 +79,14 @@ public class SessionService {
             session.getExercises().stream()
                     .filter(e -> skipped.contains(e.getExerciseId()))
                     .forEach(SessionExercise::markSkipped);
+        }
+        if (analysisReports != null) {
+            analysisReports.forEach(report -> session.getExercises().stream()
+                    .filter(exercise -> exercise.getExerciseId().equals(report.exerciseId()))
+                    .findFirst()
+                    .ifPresent(exercise -> exercise.applyAnalysis(
+                            report.score(), report.totalReps(), report.validReps(),
+                            report.summary(), report.issues())));
         }
         session.complete();
         // 운동 직후 배지 화면이 바로 갱신돼 보이도록 진행도를 재계산한다

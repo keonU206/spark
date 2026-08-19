@@ -14,6 +14,7 @@ import type {
   Routine,
   SessionResult,
 } from '@/types/api';
+import type { ExerciseAnalysisResult } from '@/services/workoutReport';
 
 /** mock ↔ 실서버 전환 스위치. `.env`의 `EXPO_PUBLIC_USE_MOCK=false`면 실서버로 붙는다. */
 const USE_MOCK = process.env.EXPO_PUBLIC_USE_MOCK !== 'false';
@@ -132,9 +133,22 @@ export async function abortSession(sessionId: string): Promise<void> {
 }
 
 /** `POST /sessions/{id}/complete` — 응답이 루틴 완료 모달에 그대로 표시된다 */
-export async function completeSession(sessionId: string): Promise<SessionResult> {
+export async function completeSession(
+  sessionId: string,
+  analysisResults: ExerciseAnalysisResult[] = [],
+): Promise<SessionResult> {
   if (USE_MOCK) return delay({ ...sessionResultMock, sessionId });
-  const { data } = await http.post<SessionResult>(`/sessions/${sessionId}/complete`);
+  const analysisReports = analysisResults.map(({ exerciseId, report }) => ({
+    exerciseId,
+    score: report.score,
+    totalReps: report.totalReps,
+    validReps: report.validReps,
+    summary: report.summary,
+    issues: report.issues.map((issue) => issue.message),
+  }));
+  const { data } = await http.post<SessionResult>(`/sessions/${sessionId}/complete`, {
+    analysisReports,
+  });
   return data;
 }
 

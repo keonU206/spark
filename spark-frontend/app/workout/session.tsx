@@ -127,8 +127,18 @@ export default function SessionScreen() {
     if (finishing.current || !sessionKey) return;
     finishing.current = true;
     try {
-      saveCurrentAnalysis();
-      setResult(await complete.mutateAsync(sessionKey));
+      const currentReport = analysis.finishAnalysis();
+      const finalAnalysisResults = currentReport && current
+        ? [
+            ...analysisResults.filter((item) => item.exerciseId !== current.id),
+            { exerciseId: current.id, name: current.name, report: currentReport },
+          ]
+        : analysisResults;
+      setAnalysisResults(finalAnalysisResults);
+      setResult(await complete.mutateAsync({
+        sessionId: sessionKey,
+        analysisResults: finalAnalysisResults,
+      }));
       finished.current = true;
     } finally {
       finishing.current = false;

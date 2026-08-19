@@ -30,6 +30,8 @@ class SessionFlowTest {
     ObjectMapper objectMapper;
     @Autowired
     StatsEngine statsEngine;
+    @Autowired
+    WorkoutSessionRepository sessionRepository;
 
     String accessToken;
     Long userId;
@@ -91,6 +93,36 @@ class SessionFlowTest {
                 .andExpect(jsonPath("$.exercises[0].status").value("completed"));
 
         assertThat(statsEngine.monthlyStats(userId, YearMonth.now()).skippedExercises()).isEqualTo(1);
+    }
+
+    @Test
+    void AI_자세_분석_리포트를_운동_기록에_저장한다() throws Exception {
+        String sessionId = startSession("e-2");
+
+        mockMvc.perform(post("/sessions/" + sessionId + "/complete")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "analysisReports": [{
+                                    "exerciseId": "e-2",
+                                    "score": 92,
+                                    "totalReps": 10,
+                                    "validReps": 9,
+                                    "summary": "안정적인 자세예요.",
+                                    "issues": ["상체를 조금 더 세워주세요."]
+                                  }]
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        SessionExercise exercise = sessionRepository.findById(Long.valueOf(sessionId))
+                .orElseThrow().getExercises().get(0);
+        assertThat(exercise.getAnalysisScore()).isEqualTo(92);
+        assertThat(exercise.getAnalyzedReps()).isEqualTo(10);
+        assertThat(exercise.getValidReps()).isEqualTo(9);
+        assertThat(exercise.getAnalysisSummary()).isEqualTo("안정적인 자세예요.");
+        assertThat(exercise.getAnalysisIssues()).contains("상체를 조금 더 세워주세요.");
     }
 
     @Test
