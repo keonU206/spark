@@ -1,5 +1,6 @@
+import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/ui/ScreenState';
@@ -30,12 +31,28 @@ export function ShareToGroupSheet({
 
   /** 공유를 마친 모임 이름 — 성공 화면을 잠깐 보여준 뒤 닫는다 */
   const [sharedTo, setSharedTo] = useState<string | null>(null);
+  /** 함께 올릴 사진 (기기 로컬 경로) */
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
       if (closeTimer.current) clearTimeout(closeTimer.current);
     };
   }, []);
+
+  async function pickPhoto() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('사진 접근 권한', '기기 설정에서 사진 접근을 허용해주세요.');
+      return;
+    }
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    const asset = picked.assets?.[0];
+    if (!picked.canceled && asset) setPhotoUri(asset.uri);
+  }
 
   // "스쿼트, 어깨돌리기, 런지 완료!" 형태로 자동 작성한다
   const completed = result.exercises.filter((e) => e.status === 'completed');
@@ -63,6 +80,31 @@ export function ShareToGroupSheet({
             <Text style={styles.title}>어느 모임에 공유할까요?</Text>
             <Text style={styles.preview}>{body}</Text>
 
+            {/* 사진 첨부 — 시안의 피드 글에는 운동 인증 사진이 들어간다 */}
+            <View style={styles.photoRow}>
+              {photoUri ? (
+                <>
+                  <Image source={{ uri: photoUri }} style={styles.photoThumb} />
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setPhotoUri(null)}
+                    hitSlop={8}
+                    style={({ pressed }) => pressed && styles.pressed}
+                  >
+                    <Text style={styles.photoRemove}>사진 빼기</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => void pickPhoto()}
+                  style={({ pressed }) => [styles.photoAttach, pressed && styles.pressed]}
+                >
+                  <Text style={styles.photoAttachLabel}>📷 인증 사진 첨부 (선택)</Text>
+                </Pressable>
+              )}
+            </View>
+
             {share.error ? (
               <Text style={styles.errorText}>
                 {share.error instanceof Error ? share.error.message : '공유에 실패했어요.'}
@@ -80,7 +122,12 @@ export function ShareToGroupSheet({
                     disabled={share.isPending}
                     onPress={() =>
                       share.mutate(
-                        { groupId: group.id, body, sessionId: result.sessionId },
+                        {
+                          groupId: group.id,
+                          body,
+                          sessionId: result.sessionId,
+                          imageUri: photoUri ?? undefined,
+                        },
                         {
                           onSuccess: () => {
                             setSharedTo(group.title);
@@ -157,6 +204,39 @@ const styles = StyleSheet.create({
   },
   rowDisabled: {
     opacity: 0.5,
+  },
+  photoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 10,
+  },
+  photoAttach: {
+    height: 36,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoAttachLabel: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 13,
+    color: colors.textMain,
+  },
+  photoThumb: {
+    width: 52,
+    height: 52,
+    borderRadius: 8,
+  },
+  photoRemove: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 13,
+    color: colors.textSub,
   },
   errorText: {
     fontFamily: fontFamily.medium,

@@ -38,7 +38,9 @@ public final class GroupDtos {
             @NotBlank(message = "내용을 입력해주세요.")
             @Size(max = 2000, message = "글은 2000자 이하로 입력해주세요.")
             String body,
-            String imageUrl
+            String imageUrl,
+            /** 운동 완료 공유면 세션 id — 같은 세션의 중복 공유를 막는다 */
+            String sessionId
     ) {
     }
 

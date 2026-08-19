@@ -43,6 +43,9 @@ public class FeedPost {
 
     private String imageUrl;
 
+    /** 운동 완료 공유로 만들어진 글이면 세션 id — 같은 세션의 중복 공유를 막는 기준 */
+    private Long sessionId;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -54,11 +57,12 @@ public class FeedPost {
     private List<FeedComment> comments = new ArrayList<>();
 
     @Builder
-    private FeedPost(WorkoutGroup group, Long authorId, String body, String imageUrl) {
+    private FeedPost(WorkoutGroup group, Long authorId, String body, String imageUrl, Long sessionId) {
         this.group = group;
         this.authorId = authorId;
         this.body = body;
         this.imageUrl = imageUrl;
+        this.sessionId = sessionId;
     }
 
     @PrePersist

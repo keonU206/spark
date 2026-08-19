@@ -121,15 +121,34 @@ public class GroupService {
         }
     }
 
-    /** 확장 API — 피드 글 작성 */
+    /** 확장 API — 피드 글 작성. 운동 공유(sessionId 있음)는 모임당 1회만 */
     @Transactional
-    public FeedPostResponse createPost(Long userId, Long groupId, String body, String imageUrl) {
+    public FeedPostResponse createPost(Long userId, Long groupId, String body, String imageUrl,
+                                       String sessionIdRaw) {
         findGroupAsMember(userId, groupId);
+
+        Long sessionId = parseSessionId(sessionIdRaw);
+        if (sessionId != null
+                && feedPostRepository.existsByGroupIdAndAuthorIdAndSessionId(groupId, userId, sessionId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "ALREADY_SHARED",
+                    "이 운동은 이미 이 모임에 공유했어요.");
+        }
+
         FeedPost post = feedPostRepository.save(FeedPost.builder()
                 .group(groupRepository.getReferenceById(groupId))
-                .authorId(userId).body(body).imageUrl(imageUrl)
+                .authorId(userId).body(body).imageUrl(imageUrl).sessionId(sessionId)
                 .build());
         return toFeedPost(post, userId, loadMembers(groupId));
+    }
+
+    /** 프론트는 세션 id를 문자열로 다룬다. 숫자가 아니면(목 데이터 등) 중복 검사 없이 그냥 올린다 */
+    private Long parseSessionId(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /** 확장 API — 댓글 작성 */

@@ -137,6 +137,26 @@ class GroupFlowTest {
     }
 
     @Test
+    void 같은_운동은_같은_모임에_한_번만_공유된다() throws Exception {
+        String groupId = createGroupAndInviteFriend();
+        String sessionId = postJson(ownerToken, "/sessions", "{ \"routineId\": \"routine-1\" }")
+                .get("sessionId").asString();
+        postJson(ownerToken, "/sessions/" + sessionId + "/complete", null);
+
+        String shareBody = "{ \"body\": \"오운완\", \"sessionId\": \"" + sessionId + "\" }";
+        mockMvc.perform(post("/groups/" + groupId + "/feed")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(shareBody))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/groups/" + groupId + "/feed")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(shareBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ALREADY_SHARED"));
+    }
+
+    @Test
     void 댓글_작성이_상세에_보인다() throws Exception {
         String groupId = createGroupAndInviteFriend();
         String postId = postJson(ownerToken, "/groups/" + groupId + "/feed",

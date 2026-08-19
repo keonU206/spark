@@ -5,6 +5,7 @@ import {
   myGroupsMock,
 } from '@/services/mock/group';
 import { http } from '@/services/http';
+import { uploadImage } from '@/services/api/upload';
 import type { FriendActivity, GroupDetail, GroupStatus, GroupSummary } from '@/types/api';
 
 /** mock ↔ 실서버 전환 스위치. `.env`의 `EXPO_PUBLIC_USE_MOCK=false`면 실서버로 붙는다. */
@@ -75,18 +76,33 @@ export async function joinGroup(inviteCode: string): Promise<GroupSummary> {
  *
  * 별도 작성 화면을 두지 않고 **운동 완료 직후 공유**하는 흐름으로 만들었다.
  * 시안의 피드 글이 "오늘 스쿼트 20개 3세트 완료!"처럼 운동 기록 자체이기 때문이다.
+ * 같은 세션을 같은 모임에 다시 공유하면 서버가 409(이미 공유했어요)를 돌려준다.
  */
 export async function createFeedPost(input: {
   groupId: string;
   body: string;
   sessionId?: string;
+  /** 첨부한 사진의 기기 로컬 경로 — 있으면 업로드 후 URL로 바꿔 보낸다 */
+  imageUri?: string;
 }): Promise<void> {
   if (USE_MOCK) {
     void input;
     await delay(undefined);
     return;
   }
-  await http.post(`/groups/${input.groupId}/feed`, { body: input.body });
+
+  let imageUrl: string | undefined;
+  if (input.imageUri) {
+    imageUrl = input.imageUri.startsWith('http')
+      ? input.imageUri
+      : await uploadImage(input.imageUri);
+  }
+
+  await http.post(`/groups/${input.groupId}/feed`, {
+    body: input.body,
+    sessionId: input.sessionId,
+    imageUrl,
+  });
 }
 
 /** `POST /groups/{groupId}/feed/{postId}/comments` — 응원 문구 달기 (피드에 댓글로 표시) */

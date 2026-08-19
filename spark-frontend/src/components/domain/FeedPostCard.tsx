@@ -34,11 +34,8 @@ export function FeedPostCard({ post, onCheer }: { post: FeedPost; onCheer: () =>
         ) : null}
       </View>
 
-      {post.imageUrl ? (
-        <Image source={{ uri: post.imageUrl }} style={styles.photo} />
-      ) : (
-        <View style={[styles.photo, styles.photoPlaceholder]} />
-      )}
+      {/* 사진이 없는 글은 사진 영역 자체를 그리지 않는다 (빈 회색 박스 방지) */}
+      {post.imageUrl ? <Image source={{ uri: post.imageUrl }} style={styles.photo} /> : null}
 
       <Text style={styles.body}>{post.body}</Text>
 
@@ -121,9 +118,6 @@ const styles = StyleSheet.create({
     aspectRatio: 4 / 3,
     borderRadius: 8,
     marginTop: 12,
-  },
-  photoPlaceholder: {
-    backgroundColor: colors.cardBorder,
   },
   body: {
     fontFamily: fontFamily.medium,

@@ -11,4 +11,7 @@ public interface FeedPostRepository extends JpaRepository<FeedPost, Long> {
     Optional<FeedPost> findTop1ByGroupIdOrderByCreatedAtDesc(Long groupId);
 
     Optional<FeedPost> findByIdAndGroupId(Long id, Long groupId);
+
+    /** 같은 세션을 같은 모임에 두 번 공유하는 것을 막는다 */
+    boolean existsByGroupIdAndAuthorIdAndSessionId(Long groupId, Long authorId, Long sessionId);
 }

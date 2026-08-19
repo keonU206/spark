@@ -99,7 +99,8 @@ public class GroupController {
     @PostMapping("/groups/{id}/feed")
     public FeedPostResponse createPost(@AuthenticationPrincipal Long userId, @PathVariable String id,
                                        @Valid @RequestBody CreateFeedPostRequest request) {
-        return groupService.createPost(userId, parseGroupId(id), request.body(), request.imageUrl());
+        return groupService.createPost(userId, parseGroupId(id), request.body(), request.imageUrl(),
+                request.sessionId());
     }
 
     @PostMapping("/groups/{groupId}/feed/{postId}/comments")

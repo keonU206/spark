@@ -323,7 +323,7 @@ export function useShareToFeed() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { groupId: string; body: string; sessionId?: string }) =>
+    mutationFn: (input: { groupId: string; body: string; sessionId?: string; imageUri?: string }) =>
       createFeedPost(input),
     onSuccess: (_data, input) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.group(input.groupId) });
