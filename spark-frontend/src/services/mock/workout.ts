@@ -53,6 +53,9 @@ export const exercisesMock: Exercise[] = [
   make('e-10', 'etc', '기타', '플랭크', '30초', 3, 3),
   make('e-11', 'etc', '기타', '브릿지', '15회', 3, 4),
   make('e-12', 'etc', '기타', '버드독', '좌우 10회', 2, 4),
+  make('e-13', 'stretch', '스트레칭', '턱 당기기', '10회', 2, 2),
+  make('e-14', 'stretch', '스트레칭', '가슴 열기', '15초 유지 5회', 2, 3),
+  make('e-15', 'stretch', '스트레칭', '사이드 밴드', '좌우 10회', 2, 3),
 ];
 
 /** 진행 화면(`81:1248`, `81:1448`)이 1/3 · 3/3으로 그려져 있어 3개로 맞췄다 */
@@ -83,14 +86,14 @@ export const recommendedRoutinesMock: Routine[] = [
   },
   {
     id: 'routine-3',
-    name: '아침 기상 스트레칭',
+    name: 'AI 상체 스트레칭',
     exerciseCount: 3,
     estimatedMinutes: 12,
     thumbnailUrl: null,
     exercises: [
-      make('e-6', 'stretch', '스트레칭', '목 스트레칭', '좌우 15초', 2, 2),
       make('e-7', 'stretch', '스트레칭', '어깨 돌리기', '앞뒤 10회', 2, 3),
-      make('e-8', 'stretch', '스트레칭', '허리 비틀기', '좌우 20초', 2, 3),
+      make('e-14', 'stretch', '스트레칭', '가슴 열기', '15초 유지 5회', 2, 3),
+      make('e-15', 'stretch', '스트레칭', '사이드 밴드', '좌우 10회', 2, 3),
     ],
   },
 ];

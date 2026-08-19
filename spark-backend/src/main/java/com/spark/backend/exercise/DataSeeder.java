@@ -73,10 +73,10 @@ public class DataSeeder implements CommandLineRunner {
         routine2.addExercise(exercises.get("e-9"));
 
         Routine routine3 = Routine.builder()
-                .id("routine-3").name("아침 기상 스트레칭").estimatedMinutes(12).build();
-        routine3.addExercise(exercises.get("e-6"));
+                .id("routine-3").name("AI 상체 스트레칭").estimatedMinutes(9).build();
         routine3.addExercise(exercises.get("e-7"));
-        routine3.addExercise(exercises.get("e-8"));
+        routine3.addExercise(exercises.get("e-14"));
+        routine3.addExercise(exercises.get("e-15"));
 
         routineRepository.saveAll(java.util.List.of(routine1, routine2, routine3));
     }
