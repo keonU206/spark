@@ -76,11 +76,26 @@ public class FriendService {
                 .toList();
     }
 
-    /** 배너를 닫으면 전부 확인 처리한다 */
+    /** 배너를 닫거나 알림함을 열면 전부 확인 처리한다 */
     @Transactional
     public void acknowledgeNudges(Long userId) {
         nudgeRepository.findByToUserIdAndSeenAtIsNullOrderByCreatedAtDesc(userId)
                 .forEach(Nudge::markSeen);
+    }
+
+    /** 알림함 — 받은 재촉 이력 (최근 50개, 확인 여부 포함) */
+    public List<com.spark.backend.group.dto.GroupDtos.NudgeInboxItemResponse> nudgeInbox(Long userId) {
+        return nudgeRepository.findTop50ByToUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(n -> {
+                    String sender = userRepository.findById(n.getFromUserId())
+                            .map(User::getNickname).orElse("친구");
+                    return new com.spark.backend.group.dto.GroupDtos.NudgeInboxItemResponse(
+                            String.valueOf(n.getId()),
+                            sender + "님이 재촉했어요! 오늘도 운동해볼까요? 🔥",
+                            com.spark.backend.common.LabelFormatter.whenLabel(n.getCreatedAt().toLocalDate()),
+                            n.getSeenAt() != null);
+                })
+                .toList();
     }
 
     private FriendActivityResponse toActivity(User user, Long viewerId) {

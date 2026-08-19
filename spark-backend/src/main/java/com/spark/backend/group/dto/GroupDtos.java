@@ -134,6 +134,17 @@ public final class GroupDtos {
     ) {
     }
 
+    /** 알림함 항목 — 받은 재촉 이력 */
+    public record NudgeInboxItemResponse(
+            String id,
+            String message,
+            /** "오늘" / "어제" / "3일 전" */
+            String whenLabel,
+            /** 아직 확인 전이면 false — 목록에서 강조 표시 */
+            boolean seen
+    ) {
+    }
+
     public record FriendActivityResponse(
             String userId,
             String nickname,

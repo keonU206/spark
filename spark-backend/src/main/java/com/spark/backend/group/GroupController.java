@@ -50,11 +50,18 @@ public class GroupController {
         return friendService.receivedNudges(userId);
     }
 
-    /** 배너 닫기 — 전부 확인 처리 */
+    /** 배너 닫기·알림함 열기 — 전부 확인 처리 */
     @PostMapping("/nudges/received/ack")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void acknowledgeNudges(@AuthenticationPrincipal Long userId) {
         friendService.acknowledgeNudges(userId);
+    }
+
+    /** 알림함 — 받은 재촉 이력 */
+    @GetMapping("/nudges/inbox")
+    public List<com.spark.backend.group.dto.GroupDtos.NudgeInboxItemResponse> nudgeInbox(
+            @AuthenticationPrincipal Long userId) {
+        return friendService.nudgeInbox(userId);
     }
 
     /* ---------------- 모임 ---------------- */

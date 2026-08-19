@@ -10,6 +10,9 @@ public interface NudgeRepository extends JpaRepository<Nudge, Long> {
 
     long countByFromUserId(Long fromUserId);
 
-    /** 아직 확인하지 않은 받은 재촉 — 홈 배너용 */
+    /** 아직 확인하지 않은 받은 재촉 — 홈 배너·종 아이콘용 */
     java.util.List<Nudge> findByToUserIdAndSeenAtIsNullOrderByCreatedAtDesc(Long toUserId);
+
+    /** 알림함 — 받은 재촉 이력 (최근 50개) */
+    java.util.List<Nudge> findTop50ByToUserIdOrderByCreatedAtDesc(Long toUserId);
 }

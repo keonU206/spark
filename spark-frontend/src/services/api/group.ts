@@ -153,7 +153,23 @@ export async function getReceivedNudges(): Promise<ReceivedNudge[]> {
   return data;
 }
 
-/** `POST /nudges/received/ack` — 배너 닫기(전부 확인 처리) */
+export type NudgeInboxItem = {
+  id: string;
+  message: string;
+  /** "오늘" / "어제" / "3일 전" */
+  whenLabel: string;
+  /** 아직 확인 전이면 false — 목록에서 강조 표시 */
+  seen: boolean;
+};
+
+/** `GET /nudges/inbox` — 받은 재촉 이력 (알림함) */
+export async function getNudgeInbox(): Promise<NudgeInboxItem[]> {
+  if (USE_MOCK) return delay([]);
+  const { data } = await http.get<NudgeInboxItem[]>('/nudges/inbox');
+  return data;
+}
+
+/** `POST /nudges/received/ack` — 배너 닫기·알림함 열기(전부 확인 처리) */
 export async function ackReceivedNudges(): Promise<void> {
   if (USE_MOCK) {
     await delay(undefined);

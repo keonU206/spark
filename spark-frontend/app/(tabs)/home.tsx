@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FriendRow } from '@/components/domain/FriendRow';
+import { NotificationBell } from '@/components/domain/NotificationBell';
 import { SectionHeader } from '@/components/domain/SectionHeader';
 import { WeekStrip } from '@/components/domain/WeekStrip';
 import { TabProfileIcon } from '@/components/illustrations/tabIcons';
@@ -59,6 +60,13 @@ export default function HomeScreen() {
         >
           <TabProfileIcon size={20} active />
         </Pressable>
+
+        {/* 알림 종 — 미확인 재촉이 있으면 빨간 점이 깜빡인다. 누르면 알림함 */}
+        <NotificationBell
+          hasUnread={(receivedNudges.data ?? []).length > 0}
+          onPress={() => router.push('/alerts')}
+          top={insets.top + 18}
+        />
 
         <Text style={styles.heroTitle}>{copy.heroTitle}</Text>
         <Text style={styles.routineName}>{routine.name}</Text>

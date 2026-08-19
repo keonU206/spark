@@ -16,6 +16,7 @@ import {
   getGroup,
   getGroupStatus,
   getMyGroups,
+  getNudgeInbox,
   getReceivedNudges,
   joinGroup,
   sendNudge,
@@ -68,6 +69,7 @@ export const queryKeys = {
   group: (id: string) => ['groups', id] as const,
   groupStatus: (id: string) => ['groups', id, 'status'] as const,
   receivedNudges: ['nudges', 'received'] as const,
+  nudgeInbox: ['nudges', 'inbox'] as const,
   me: ['me'] as const,
   notificationSettings: ['me', 'notification-settings'] as const,
   aiPtConsent: ['me', 'consents'] as const,
@@ -202,7 +204,12 @@ export function useReceivedNudges() {
   });
 }
 
-/** 배너 닫기 — 받은 재촉을 전부 확인 처리한다 */
+/** 알림함 — 받은 재촉 이력 */
+export function useNudgeInbox() {
+  return useQuery({ queryKey: queryKeys.nudgeInbox, queryFn: getNudgeInbox });
+}
+
+/** 배너 닫기·알림함 열기 — 받은 재촉을 전부 확인 처리한다 */
 export function useAckNudges() {
   const queryClient = useQueryClient();
 
@@ -210,6 +217,7 @@ export function useAckNudges() {
     mutationFn: () => ackReceivedNudges(),
     onSuccess: () => {
       queryClient.setQueryData(queryKeys.receivedNudges, []);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.nudgeInbox });
     },
   });
 }
