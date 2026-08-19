@@ -34,6 +34,9 @@ public class Nudge {
     /** 모임 화면에서 보냈으면 채운다 */
     private Long groupId;
 
+    /** 받은 사람이 홈 배너에서 확인한 시각 — null이면 아직 안 본 것 */
+    private LocalDateTime seenAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -47,5 +50,11 @@ public class Nudge {
     @PrePersist
     void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void markSeen() {
+        if (this.seenAt == null) {
+            this.seenAt = LocalDateTime.now();
+        }
     }
 }

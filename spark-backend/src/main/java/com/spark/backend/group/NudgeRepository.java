@@ -9,4 +9,7 @@ public interface NudgeRepository extends JpaRepository<Nudge, Long> {
     boolean existsByFromUserIdAndToUserIdAndCreatedAtAfter(Long fromUserId, Long toUserId, LocalDateTime after);
 
     long countByFromUserId(Long fromUserId);
+
+    /** 아직 확인하지 않은 받은 재촉 — 홈 배너용 */
+    java.util.List<Nudge> findByToUserIdAndSeenAtIsNullOrderByCreatedAtDesc(Long toUserId);
 }

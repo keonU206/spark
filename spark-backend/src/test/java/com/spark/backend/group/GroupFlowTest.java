@@ -194,6 +194,27 @@ class GroupFlowTest {
     }
 
     @Test
+    void 받은_재촉은_배너로_보이고_닫으면_사라진다() throws Exception {
+        createGroupAndInviteFriend();
+        postJson(ownerToken, "/nudges", "{ \"targetUserId\": \"" + friendUserId + "\" }");
+
+        mockMvc.perform(get("/nudges/received").header("Authorization", "Bearer " + friendToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].message").value("모임장님이 재촉했어요! 오늘도 운동해볼까요? 🔥"));
+
+        // 보낸 사람 쪽에는 아무것도 없다
+        mockMvc.perform(get("/nudges/received").header("Authorization", "Bearer " + ownerToken))
+                .andExpect(jsonPath("$.length()").value(0));
+
+        // 배너를 닫으면 확인 처리되어 다시 안 보인다
+        mockMvc.perform(post("/nudges/received/ack").header("Authorization", "Bearer " + friendToken))
+                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/nudges/received").header("Authorization", "Bearer " + friendToken))
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void 모임_밖의_사람에게는_넛지를_보낼_수_없다() throws Exception {
         String outsiderToken = signup("stranger@spark.app", "낯선이");
         String outsiderId = subOf(outsiderToken);

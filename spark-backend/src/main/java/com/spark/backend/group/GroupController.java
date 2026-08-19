@@ -43,6 +43,20 @@ public class GroupController {
         friendService.nudge(userId, request.targetUserId(), request.groupId());
     }
 
+    /** 받은 재촉(미확인) — 홈 배너 */
+    @GetMapping("/nudges/received")
+    public List<com.spark.backend.group.dto.GroupDtos.ReceivedNudgeResponse> receivedNudges(
+            @AuthenticationPrincipal Long userId) {
+        return friendService.receivedNudges(userId);
+    }
+
+    /** 배너 닫기 — 전부 확인 처리 */
+    @PostMapping("/nudges/received/ack")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void acknowledgeNudges(@AuthenticationPrincipal Long userId) {
+        friendService.acknowledgeNudges(userId);
+    }
+
     /* ---------------- 모임 ---------------- */
 
     @GetMapping("/groups/mine")

@@ -117,6 +117,14 @@ public final class GroupDtos {
     ) {
     }
 
+    /** 받은 재촉 — 홈 배너에 그대로 표시된다 */
+    public record ReceivedNudgeResponse(
+            String id,
+            String message,
+            String groupId
+    ) {
+    }
+
     public record FriendActivityResponse(
             String userId,
             String nickname,

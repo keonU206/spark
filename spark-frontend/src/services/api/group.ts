@@ -112,6 +112,29 @@ export async function cheerPost(groupId: string, postId: string): Promise<void> 
   await http.post(`/groups/${groupId}/feed/${postId}/cheer`);
 }
 
+export type ReceivedNudge = {
+  id: string;
+  /** "최지호님이 재촉했어요! 오늘도 운동해볼까요? 🔥" — 문구는 서버가 만든다 */
+  message: string;
+  groupId: string | null;
+};
+
+/** `GET /nudges/received` — 아직 확인 안 한 받은 재촉 (홈 배너) */
+export async function getReceivedNudges(): Promise<ReceivedNudge[]> {
+  if (USE_MOCK) return delay([]);
+  const { data } = await http.get<ReceivedNudge[]>('/nudges/received');
+  return data;
+}
+
+/** `POST /nudges/received/ack` — 배너 닫기(전부 확인 처리) */
+export async function ackReceivedNudges(): Promise<void> {
+  if (USE_MOCK) {
+    await delay(undefined);
+    return;
+  }
+  await http.post('/nudges/received/ack');
+}
+
 /** `POST /nudges` — 재촉하기 / 잡도리 / 깨우기 공통. 같은 대상에게 하루 1회 */
 export async function sendNudge(targetUserId: string): Promise<void> {
   if (USE_MOCK) {

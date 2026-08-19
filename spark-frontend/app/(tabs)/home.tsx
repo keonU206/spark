@@ -10,7 +10,7 @@ import { PillButton } from '@/components/ui/PillButton';
 import { ScreenError } from '@/components/ui/ScreenState';
 import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
 import { strings } from '@/constants/strings';
-import { useHome, useSendNudge } from '@/hooks/queries';
+import { useAckNudges, useHome, useReceivedNudges, useSendNudge } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
 
 const copy = strings.home;
@@ -26,6 +26,8 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { data, error, isPending, refetch } = useHome();
   const nudge = useSendNudge();
+  const receivedNudges = useReceivedNudges();
+  const ackNudges = useAckNudges();
 
   if (error) return <ScreenError error={error} onRetry={() => void refetch()} />;
   if (isPending || !data) return <HomeSkeleton />;
@@ -74,6 +76,28 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+
+      {/* 받은 재촉 배너 — 친구가 재촉하면 여기 뜬다 (20초마다 갱신되는 인앱 알림) */}
+      {(receivedNudges.data ?? []).length > 0 ? (
+        <View style={styles.nudgeBanner}>
+          <View style={styles.nudgeTexts}>
+            {(receivedNudges.data ?? []).map((n) => (
+              <Text key={n.id} style={styles.nudgeMessage}>
+                {n.message}
+              </Text>
+            ))}
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="재촉 알림 닫기"
+            onPress={() => ackNudges.mutate()}
+            hitSlop={10}
+            style={({ pressed }) => pressed && styles.profileButtonPressed}
+          >
+            <Text style={styles.nudgeClose}>✕</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {/* 연속 출석 */}
       <View style={styles.streak}>
@@ -207,6 +231,33 @@ const styles = StyleSheet.create({
   heroCtaRow: {
     alignItems: 'flex-end',
     marginTop: 30,
+  },
+  nudgeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: colors.main,
+  },
+  nudgeTexts: {
+    flex: 1,
+    gap: 4,
+  },
+  nudgeMessage: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '700',
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.white,
+  },
+  nudgeClose: {
+    fontSize: 14,
+    lineHeight: 18,
+    color: colors.white,
+    paddingLeft: 12,
   },
   streak: {
     paddingHorizontal: 16,

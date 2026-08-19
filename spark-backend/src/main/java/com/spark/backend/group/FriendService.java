@@ -62,6 +62,27 @@ public class FriendService {
                 .build());
     }
 
+    /** 아직 확인 안 한 받은 재촉 — 홈 배너용. 문구는 서버가 만든다 (표기 규약) */
+    public List<com.spark.backend.group.dto.GroupDtos.ReceivedNudgeResponse> receivedNudges(Long userId) {
+        return nudgeRepository.findByToUserIdAndSeenAtIsNullOrderByCreatedAtDesc(userId).stream()
+                .map(n -> {
+                    String sender = userRepository.findById(n.getFromUserId())
+                            .map(User::getNickname).orElse("친구");
+                    return new com.spark.backend.group.dto.GroupDtos.ReceivedNudgeResponse(
+                            String.valueOf(n.getId()),
+                            sender + "님이 재촉했어요! 오늘도 운동해볼까요? 🔥",
+                            n.getGroupId() != null ? String.valueOf(n.getGroupId()) : null);
+                })
+                .toList();
+    }
+
+    /** 배너를 닫으면 전부 확인 처리한다 */
+    @Transactional
+    public void acknowledgeNudges(Long userId) {
+        nudgeRepository.findByToUserIdAndSeenAtIsNullOrderByCreatedAtDesc(userId)
+                .forEach(Nudge::markSeen);
+    }
+
     private FriendActivityResponse toActivity(User user, Long viewerId) {
         boolean isMe = user.getId().equals(viewerId);
         return new FriendActivityResponse(

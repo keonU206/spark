@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 
 import {
+  ackReceivedNudges,
   addComment,
   cheerPost,
   createFeedPost,
@@ -14,6 +15,7 @@ import {
   getGroup,
   getGroupStatus,
   getMyGroups,
+  getReceivedNudges,
   joinGroup,
   sendNudge,
 } from '@/services/api/group';
@@ -64,6 +66,7 @@ export const queryKeys = {
   myGroups: ['groups', 'mine'] as const,
   group: (id: string) => ['groups', id] as const,
   groupStatus: (id: string) => ['groups', id, 'status'] as const,
+  receivedNudges: ['nudges', 'received'] as const,
   me: ['me'] as const,
   notificationSettings: ['me', 'notification-settings'] as const,
   aiPtConsent: ['me', 'consents'] as const,
@@ -183,6 +186,30 @@ export function useGroupStatus(id: string | undefined) {
     queryKey: queryKeys.groupStatus(id ?? ''),
     queryFn: () => getGroupStatus(id as string),
     enabled: !!id,
+  });
+}
+
+/**
+ * 받은 재촉(홈 배너). 앱을 켜둔 상태에서도 도착하도록 20초마다 다시 확인한다 —
+ * 푸시 알림 전 단계의 인앱 알림이다.
+ */
+export function useReceivedNudges() {
+  return useQuery({
+    queryKey: queryKeys.receivedNudges,
+    queryFn: getReceivedNudges,
+    refetchInterval: 20_000,
+  });
+}
+
+/** 배너 닫기 — 받은 재촉을 전부 확인 처리한다 */
+export function useAckNudges() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => ackReceivedNudges(),
+    onSuccess: () => {
+      queryClient.setQueryData(queryKeys.receivedNudges, []);
+    },
   });
 }
 
