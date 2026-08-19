@@ -26,6 +26,9 @@ export function CameraView({
     let disposed = false;
     async function start() {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('이 브라우저는 카메라를 지원하지 않아요. Chrome의 localhost로 접속해주세요.');
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
           audio: false,
@@ -41,7 +44,13 @@ export function CameraView({
         }
         onReady?.(true);
       } catch (reason) {
-        setError(reason instanceof Error ? reason.message : '카메라를 열 수 없어요.');
+        const message =
+          reason instanceof DOMException && reason.name === 'NotAllowedError'
+            ? '주소창의 카메라 권한을 허용한 뒤 새로고침해주세요.'
+            : reason instanceof Error
+              ? reason.message
+              : '카메라를 열 수 없어요.';
+        setError(message);
         onReady?.(false);
       }
     }
@@ -65,6 +74,9 @@ export function CameraView({
       canvas.height = Math.round((video.videoHeight / video.videoWidth) * 480);
       const context = canvas.getContext('2d');
       if (!context) return;
+      // 화면의 전면 카메라 미러링과 분석 이미지 좌표를 일치시킨다.
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const base64 = canvas.toDataURL('image/jpeg', 0.45).split(',')[1];
       if (base64) onFrame(base64);

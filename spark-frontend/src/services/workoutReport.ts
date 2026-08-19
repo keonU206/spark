@@ -29,6 +29,12 @@ export type WorkoutAnalysisReport = {
   summary: string;
 };
 
+export type ExerciseAnalysisResult = {
+  exerciseId: string;
+  name: string;
+  report: WorkoutAnalysisReport;
+};
+
 export type RepMeasurement = {
   leftKneeAngle: number;
   rightKneeAngle: number;

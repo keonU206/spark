@@ -18,6 +18,7 @@ import {
 } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
 import type { SessionResult } from '@/types/api';
+import type { ExerciseAnalysisResult } from '@/services/workoutReport';
 
 function formatTimer(seconds: number) {
   const h = Math.floor(seconds / 3600);
@@ -53,6 +54,7 @@ export default function SessionScreen() {
   const [paused, setPaused] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [result, setResult] = useState<SessionResult | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<ExerciseAnalysisResult[]>([]);
 
   // 실제 카메라를 쓸 수 있는지는 CameraStage가 확인해서 알려준다
   const [hasCamera, setHasCamera] = useState(false);
@@ -111,11 +113,21 @@ export default function SessionScreen() {
   const isLast = index === total - 1;
   const progress = total > 0 ? (index + 1) / total : 0;
 
+  function saveCurrentAnalysis() {
+    const report = analysis.finishAnalysis();
+    if (!report || !current) return;
+    setAnalysisResults((items) => [
+      ...items.filter((item) => item.exerciseId !== current.id),
+      { exerciseId: current.id, name: current.name, report },
+    ]);
+  }
+
   async function finish() {
     const sessionKey = sessionId.current ?? routineId ?? exerciseId;
     if (finishing.current || !sessionKey) return;
     finishing.current = true;
     try {
+      saveCurrentAnalysis();
       setResult(await complete.mutateAsync(sessionKey));
       finished.current = true;
     } finally {
@@ -146,7 +158,14 @@ export default function SessionScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="다음 운동"
-            onPress={() => (isLast ? void finish() : setIndex((i) => i + 1))}
+            onPress={() => {
+              if (isLast) {
+                void finish();
+              } else {
+                saveCurrentAnalysis();
+                setIndex((i) => i + 1);
+              }
+            }}
             style={({ pressed }) => [styles.arrow, pressed && styles.pressed]}
           >
             <Text style={styles.arrowLabel}>›</Text>
@@ -225,7 +244,12 @@ export default function SessionScreen() {
       ) : null}
 
       {result ? (
-        <SessionResultModal visible result={result} onGoHome={() => router.replace('/home')} />
+        <SessionResultModal
+          visible
+          result={result}
+          analysisResults={analysisResults}
+          onGoHome={() => router.replace('/home')}
+        />
       ) : null}
     </View>
   );

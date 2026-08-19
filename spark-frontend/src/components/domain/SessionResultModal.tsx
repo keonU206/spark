@@ -5,6 +5,7 @@ import { ShareToGroupSheet } from '@/components/domain/ShareToGroupSheet';
 import { PillButton } from '@/components/ui/PillButton';
 import { colors, fontFamily } from '@/theme/tokens';
 import type { SessionResult } from '@/types/api';
+import type { ExerciseAnalysisResult } from '@/services/workoutReport';
 
 /**
  * 루틴 완료 — Figma `81:1505`
@@ -13,10 +14,12 @@ import type { SessionResult } from '@/types/api';
 export function SessionResultModal({
   visible,
   result,
+  analysisResults = [],
   onGoHome,
 }: {
   visible: boolean;
   result: SessionResult | null;
+  analysisResults?: ExerciseAnalysisResult[];
   onGoHome: () => void;
 }) {
   const [shareOpen, setShareOpen] = useState(false);
@@ -43,6 +46,26 @@ export function SessionResultModal({
               </View>
             ))}
           </View>
+
+          {analysisResults.length ? (
+            <View style={styles.analysisSection}>
+              <Text style={styles.statsTitle}>AI 자세 분석</Text>
+              {analysisResults.map(({ exerciseId, name, report }) => (
+                <View key={exerciseId} style={styles.analysisRow}>
+                  <View style={styles.analysisHeading}>
+                    <Text style={styles.analysisName}>{name}</Text>
+                    <Text style={styles.analysisScore}>{report.score}점</Text>
+                  </View>
+                  <Text style={styles.analysisCount}>
+                    {`${report.totalReps}회 중 안정 자세 ${report.validReps}회`}
+                  </Text>
+                  <Text style={styles.analysisFeedback} numberOfLines={2}>
+                    {report.summary}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
 
           <View style={styles.statsCard}>
             <Text style={styles.statsTitle}>이번 달 통계</Text>
@@ -163,6 +186,49 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  analysisSection: {
+    marginTop: 16,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  analysisRow: {
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+    paddingTop: 8,
+  },
+  analysisHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  analysisName: {
+    flex: 1,
+    fontFamily: fontFamily.medium,
+    fontWeight: '600',
+    fontSize: 13,
+    color: colors.textMain,
+  },
+  analysisScore: {
+    fontFamily: fontFamily.bold,
+    fontWeight: '800',
+    fontSize: 15,
+    color: colors.main,
+  },
+  analysisCount: {
+    marginTop: 3,
+    fontFamily: fontFamily.regular,
+    fontSize: 11,
+    color: colors.textSub,
+  },
+  analysisFeedback: {
+    marginTop: 3,
+    fontFamily: fontFamily.regular,
+    fontSize: 11,
+    lineHeight: 16,
+    color: colors.textMain,
   },
   statsTitle: {
     fontFamily: fontFamily.bold,

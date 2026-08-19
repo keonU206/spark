@@ -37,12 +37,28 @@ client.interceptors.request.use((config) => {
 });
 
 export async function detectPose(image: string, exerciseType: ExerciseType) {
-  const response = await client.post<AiPoseResponse>('/pose', {
-    image,
-    exercise_type: exerciseType,
-    timestamp_sec: Date.now() / 1000,
-  });
-  return response.data;
+  try {
+    const response = await client.post<AiPoseResponse>('/pose', {
+      image,
+      exercise_type: exerciseType,
+      timestamp_sec: Date.now() / 1000,
+    });
+    return response.data;
+  } catch (reason) {
+    if (axios.isAxiosError(reason)) {
+      if (reason.response?.status === 401) {
+        throw new Error('AI 분석 인증에 실패했어요. 시연용 토큰을 확인해주세요.');
+      }
+      if (reason.code === 'ECONNABORTED') {
+        throw new Error('AI 분석 응답이 늦어요. 서버 상태를 확인해주세요.');
+      }
+      if (!reason.response) {
+        throw new Error('AI 서버에 연결할 수 없어요. 서버 주소와 실행 상태를 확인해주세요.');
+      }
+      throw new Error(`AI 분석 요청에 실패했어요. (${reason.response.status})`);
+    }
+    throw reason;
+  }
 }
 
 const MEDIAPIPE_TO_POSE = {
