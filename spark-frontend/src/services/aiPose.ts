@@ -76,10 +76,10 @@ export function toPose(landmarks?: AiLandmark[] | null): Pose | null {
 
 export function exerciseTypeFor(id?: string, name?: string): ExerciseType {
   const value = `${id ?? ''} ${name ?? ''}`.toLowerCase();
-  if (value.includes('e-6') || value.includes('턱 당기기') || value.includes('목 스트레칭')) return 'chin_tuck';
+  if (value.includes('e-13') || value.includes('턱 당기기') || value.includes('목 스트레칭')) return 'chin_tuck';
   if (value.includes('e-7') || value.includes('어깨')) return 'shoulder_roll';
-  if (value.includes('e-8') || value.includes('가슴')) return 'chest_opener';
-  if (value.includes('e-9') || value.includes('사이드 밴드')) return 'side_bend';
+  if (value.includes('e-14') || value.includes('가슴')) return 'chest_opener';
+  if (value.includes('e-15') || value.includes('사이드 밴드')) return 'side_bend';
   if (value.includes('런지') || value.includes('lunge')) return 'lunge';
   return 'squat';
 }

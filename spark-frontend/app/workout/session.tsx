@@ -7,7 +7,7 @@ import { CameraConsentModal } from '@/components/domain/CameraConsentModal';
 import { CameraStage } from '@/components/domain/CameraStage';
 import { SessionResultModal } from '@/components/domain/SessionResultModal';
 import { TabHomeIcon } from '@/components/illustrations/tabIcons';
-import { usePoseEngine } from '@/hooks/usePoseEngine';
+import { useWorkoutAnalysis } from '@/hooks/useWorkoutAnalysis';
 import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import {
@@ -56,9 +56,9 @@ export default function SessionScreen() {
 
   // 실제 카메라를 쓸 수 있는지는 CameraStage가 확인해서 알려준다
   const [hasCamera, setHasCamera] = useState(false);
-  const { pose } = usePoseEngine({
+  const analysis = useWorkoutAnalysis({
     enabled: consented && !paused && !result,
-    hasRealSource: hasCamera,
+    exercise: routineQuery.data?.exercises[index],
   });
   const finishing = useRef(false);
   /** 정상 완료했는지 — 언마운트 시 중단으로 기록할지 판단한다 */
@@ -154,7 +154,12 @@ export default function SessionScreen() {
         </View>
       </View>
 
-      <CameraStage pose={pose} paused={paused} onSourceReady={setHasCamera} />
+      <CameraStage
+        pose={analysis.pose}
+        paused={paused}
+        onSourceReady={setHasCamera}
+        onFrame={analysis.onFrame}
+      />
 
       <View style={styles.floatingControls}>
         <Pressable
@@ -191,7 +196,9 @@ export default function SessionScreen() {
           3/3 `81:1448` "루틴 완료까지 얼마 안 남았어요!"
         */}
         <Text style={styles.hint}>
-          {index === 0
+          {hasCamera
+            ? `${analysis.repCount}회 · ${analysis.feedback}`
+            : index === 0
             ? '완료까지 같이 운동해요!'
             : isLast
               ? '루틴 완료까지 얼마 안 남았어요!'
