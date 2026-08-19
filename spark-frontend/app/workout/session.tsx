@@ -8,6 +8,7 @@ import { CameraStage } from '@/components/domain/CameraStage';
 import { SessionResultModal } from '@/components/domain/SessionResultModal';
 import { TabHomeIcon } from '@/components/illustrations/tabIcons';
 import { usePoseEngine } from '@/hooks/usePoseEngine';
+import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import {
   useAbortSession,
@@ -212,7 +213,7 @@ export default function SessionScreen() {
         <CameraConsentModal
           visible
           onAgree={() => setConsented(true)}
-          onDecline={() => router.back()}
+          onDecline={() => goBack('/home')}
         />
       ) : null}
 

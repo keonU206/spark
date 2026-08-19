@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { PillButton } from '@/components/ui/PillButton';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { SettingGroup, SettingRow } from '@/components/ui/SettingRow';
@@ -89,7 +90,7 @@ export default function ProfileEditScreen() {
         onSuccess: () => {
           setEditedNickname(undefined);
           setPickedAvatar(undefined);
-          router.back();
+          goBack('/my');
         },
         onError: (e: unknown) =>
           Alert.alert('저장하지 못했어요', e instanceof Error ? e.message : String(e)),
@@ -104,7 +105,7 @@ export default function ProfileEditScreen() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/my')} />
         </View>
         <Text style={styles.headerTitle}>프로필 편집</Text>
       </View>

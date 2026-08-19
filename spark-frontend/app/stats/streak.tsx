@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MonthCalendar } from '@/components/domain/MonthCalendar';
 import { StatCard, StatRow } from '@/components/domain/StatCard';
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { PillButton } from '@/components/ui/PillButton';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useStreakDetail } from '@/hooks/queries';
@@ -32,7 +33,7 @@ export default function StreakScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/home')} />
         </View>
         <Text style={styles.headerTitle}>연속 출석 현황</Text>
       </View>

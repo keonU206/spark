@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { HighlightText } from '@/components/ui/HighlightText';
 import { FormField } from '@/components/ui/FormField';
 import { PillButton } from '@/components/ui/PillButton';
@@ -53,7 +54,7 @@ export default function SignupNameScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={{ paddingTop: insets.top + 37 }}>
-        <BackButton onPress={() => router.back()} />
+        <BackButton onPress={() => goBack('/signup')} />
       </View>
 
       <ScrollView

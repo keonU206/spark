@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useBadges } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
@@ -23,7 +24,7 @@ export default function BadgesScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/records')} />
         </View>
         <Text style={styles.headerTitle}>배지 목록</Text>
       </View>

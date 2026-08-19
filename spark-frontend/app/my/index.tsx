@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatCard, StatRow } from '@/components/domain/StatCard';
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { SettingGroup, SettingRow } from '@/components/ui/SettingRow';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useMyProfile } from '@/hooks/queries';
@@ -26,7 +27,7 @@ export default function MyPageScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/home')} />
         </View>
         <Text style={styles.headerTitle}>마이페이지</Text>
       </View>

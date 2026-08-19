@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { FormField } from '@/components/ui/FormField';
 import { PillButton } from '@/components/ui/PillButton';
 import { groupJoinSchema, limits, type GroupJoinForm } from '@/lib/validation';
@@ -43,7 +44,7 @@ export default function JoinGroupScreen() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/community')} />
         </View>
         <Text style={styles.headerTitle}>모임 참여하기</Text>
       </View>

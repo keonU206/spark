@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { SettingGroup, SettingRow } from '@/components/ui/SettingRow';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useAiPtConsent, useUpdateAiPtConsent } from '@/hooks/queries';
@@ -33,7 +34,7 @@ export default function AiPtConsentScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/my')} />
         </View>
         <Text style={styles.headerTitle}>AI PT 동의 관리</Text>
       </View>

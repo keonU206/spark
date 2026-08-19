@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { HighlightText } from '@/components/ui/HighlightText';
 import { PillButton } from '@/components/ui/PillButton';
@@ -65,7 +66,7 @@ export default function SurveyScreen() {
   return (
     <View style={styles.container}>
       <View style={{ paddingTop: insets.top + 37 }}>
-        <BackButton onPress={() => router.back()} />
+        <BackButton onPress={() => goBack('/login')} />
       </View>
 
       <ScrollView

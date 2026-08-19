@@ -3,6 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { PillButton } from '@/components/ui/PillButton';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useExercise } from '@/hooks/queries';
@@ -29,7 +30,7 @@ export default function ExerciseDetailScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/workout')} />
         </View>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {exercise.name}

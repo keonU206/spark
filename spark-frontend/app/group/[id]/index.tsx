@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FeedPostCard } from '@/components/domain/FeedPostCard';
 import { GroupCard } from '@/components/domain/GroupCard';
 import { BackButton } from '@/components/ui/BackButton';
+import { goBack } from '@/lib/navigation';
 import { ScreenError, ScreenLoading } from '@/components/ui/ScreenState';
 import { useCheerPost, useGroup } from '@/hooks/queries';
 import { colors, fontFamily } from '@/theme/tokens';
@@ -30,7 +31,7 @@ export default function GroupDetailScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerBack}>
-          <BackButton onPress={() => router.back()} />
+          <BackButton onPress={() => goBack('/community')} />
         </View>
         <Text style={styles.headerTitle}>모임</Text>
       </View>
