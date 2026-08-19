@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -109,7 +110,11 @@ export default function GroupDetailScreen() {
         >
           {data.members.map((member) => (
             <View key={member.userId} style={styles.memberCard}>
-              <View style={styles.memberAvatar} />
+              {member.avatarUrl ? (
+                <Image source={{ uri: member.avatarUrl }} style={styles.memberAvatar} />
+              ) : (
+                <View style={[styles.memberAvatar, styles.memberAvatarPlaceholder]} />
+              )}
               <Text style={styles.memberName} numberOfLines={1}>
                 {member.nickname}
               </Text>
@@ -355,6 +360,8 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+  },
+  memberAvatarPlaceholder: {
     backgroundColor: colors.cardBorder,
   },
   memberName: {

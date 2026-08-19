@@ -318,6 +318,10 @@ export function useUpdateMyProfile() {
     mutationFn: (patch: { nickname?: string; avatarUri?: string }) => updateMyProfile(patch),
     onSuccess: (profile) => {
       queryClient.setQueryData(queryKeys.me, profile);
+      // 내 사진·닉네임은 홈 친구현황, 모임 멤버·피드에도 보이므로 함께 갱신한다
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.friendActivities });
+      void queryClient.invalidateQueries({ queryKey: ['groups'] });
     },
   });
 }
