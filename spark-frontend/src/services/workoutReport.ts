@@ -1,4 +1,4 @@
-import type { ExerciseType } from '@/services/aiPose';
+import type { ExerciseType } from './aiPose';
 
 export type ReportIssueType =
   | 'SHALLOW_DEPTH'
