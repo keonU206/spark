@@ -18,15 +18,17 @@ export function CameraStage({
   pose,
   paused,
   onSourceReady,
+  onFrame,
 }: {
   pose: Pose | null;
   paused: boolean;
   /** 실제 카메라를 쓸 수 있는지 상위(세션 화면)에 알려준다 */
   onSourceReady?: (ready: boolean) => void;
+  onFrame?: (base64: string) => void;
 }) {
   return (
     <View style={styles.stage}>
-      <CameraView isActive={!paused} onReady={onSourceReady} />
+      <CameraView isActive={!paused} onReady={onSourceReady} onFrame={onFrame} />
       {pose && !paused ? <PoseOverlay pose={pose} /> : null}
     </View>
   );

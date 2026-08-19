@@ -16,10 +16,13 @@ import { colors, fontFamily } from '@/theme/tokens';
 export function CameraView({
   isActive,
   onReady,
+  onFrame,
 }: {
   isActive: boolean;
   onReady?: (ready: boolean) => void;
+  onFrame?: (base64: string) => void;
 }) {
+  void onFrame;
   const { hasPermission, requestPermission } = useCameraPermission();
   const front = useCameraDevice('front');
   const back = useCameraDevice('back');

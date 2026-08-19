@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { createElement, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, fontFamily } from '@/theme/tokens';
@@ -12,34 +12,96 @@ import { colors, fontFamily } from '@/theme/tokens';
 export function CameraView({
   isActive,
   onReady,
+  onFrame,
 }: {
   isActive: boolean;
   onReady?: (ready: boolean) => void;
+  onFrame?: (base64: string) => void;
 }) {
-  void isActive;
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 웹에서는 실제 카메라가 없으므로 mock 골격으로 떨어지게 한다
-    onReady?.(false);
+    let disposed = false;
+    async function start() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false,
+        });
+        if (disposed) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+        onReady?.(true);
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : '카메라를 열 수 없어요.');
+        onReady?.(false);
+      }
+    }
+    void start();
+    return () => {
+      disposed = true;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      onReady?.(false);
+    };
+    // 콜백 변경으로 카메라가 재시작되지 않도록 최초 한 번만 실행한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!isActive || !onFrame) return;
+    const timer = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || video.readyState < 2 || !video.videoWidth) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = 480;
+      canvas.height = Math.round((video.videoHeight / video.videoWidth) * 480);
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const base64 = canvas.toDataURL('image/jpeg', 0.45).split(',')[1];
+      if (base64) onFrame(base64);
+    }, 500);
+    return () => clearInterval(timer);
+  }, [isActive, onFrame]);
+
   return (
-    <View style={styles.fallback}>
-      <Text style={styles.label}>카메라 미리보기</Text>
-      <Text style={styles.hint}>개발 빌드에서 실제 카메라가 표시됩니다</Text>
+    <View style={styles.container}>
+      {createElement('video', {
+        ref: videoRef,
+        muted: true,
+        playsInline: true,
+        style: {
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          transform: 'scaleX(-1)',
+        },
+      })}
+      {error ? (
+        <View style={styles.fallback}>
+          <Text style={styles.label}>카메라 권한을 확인해주세요</Text>
+          <Text style={styles.hint}>{error}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fallback: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  container: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#B3B3B3',
+  },
+  fallback: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,

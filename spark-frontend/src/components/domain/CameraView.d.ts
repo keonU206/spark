@@ -10,4 +10,6 @@ export declare function CameraView(props: {
   isActive: boolean;
   /** 실제 카메라를 쓸 수 있는지 상위에 알린다 */
   onReady?: (ready: boolean) => void;
+  /** 웹 카메라에서 분석용 JPEG base64 프레임을 전달한다. */
+  onFrame?: (base64: string) => void;
 }): JSX.Element;
