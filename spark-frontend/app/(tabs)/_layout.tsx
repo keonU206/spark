@@ -19,10 +19,8 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets();
 
   return (
-    <Tabs>
-      <View style={styles.content}>
-        <TabSlot />
-      </View>
+    <Tabs style={styles.tabs}>
+      <TabSlot style={styles.content} />
 
       {/* TabList asChild는 스타일 배열을 받지 못해 미리 합쳐서 넘긴다 */}
       <TabList asChild>
@@ -46,9 +44,15 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  tabs: {
+    flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
+  },
   content: {
     flex: 1,
     minHeight: 0,
+    overflow: 'hidden',
   },
   bar: {
     position: 'absolute',
