@@ -70,7 +70,7 @@ public class FriendService {
                 user.getAvatarUrl(),
                 groupService.memberStatusLabel(user.getId()),
                 isMe,
-                !isMe && nudgeQueryService.canNudgeToday(viewerId, user.getId()));
+                groupService.canNudge(viewerId, user.getId()));
     }
 
     private Long parseLong(String raw, String code, String message) {

@@ -169,7 +169,7 @@ public class GroupService {
                 .map(u -> new GroupMemberStatusResponse(
                         String.valueOf(u.getId()), u.getNickname(), u.getAvatarUrl(),
                         memberStatusLabel(u.getId()),
-                        !u.getId().equals(userId) && nudgeQueryService.canNudgeToday(userId, u.getId())))
+                        canNudge(userId, u.getId())))
                 .toList();
 
         return new GroupStatusResponse(summarize(group),
@@ -180,8 +180,18 @@ public class GroupService {
 
     public String memberStatusLabel(Long memberId) {
         int streak = statsEngine.streakDays(memberId);
-        boolean today = statsEngine.completedDays(memberId, LocalDate.now()).contains(LocalDate.now());
-        return LabelFormatter.memberStatusLabel(streak, today);
+        return LabelFormatter.memberStatusLabel(streak, workedOutToday(memberId));
+    }
+
+    public boolean workedOutToday(Long memberId) {
+        return statsEngine.completedDays(memberId, LocalDate.now()).contains(LocalDate.now());
+    }
+
+    /** 재촉하기는 ① 내가 아니고 ② 오늘 아직 운동을 안 했고 ③ 오늘 재촉한 적 없을 때만 */
+    public boolean canNudge(Long viewerId, Long targetId) {
+        return !targetId.equals(viewerId)
+                && !workedOutToday(targetId)
+                && nudgeQueryService.canNudgeToday(viewerId, targetId);
     }
 
     private WorkoutGroup findGroupAsMember(Long userId, Long groupId) {

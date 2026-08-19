@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     bottom: 14,
+    zIndex: 1,
   },
   headerTitle: {
     fontFamily: fontFamily.bold,

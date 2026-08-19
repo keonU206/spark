@@ -189,6 +189,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     bottom: 14,
+    // 전체 폭을 차지하는 제목 텍스트가 터치를 가로채지 않게 위로 올린다
+    zIndex: 1,
   },
   headerTitle: {
     fontFamily: fontFamily.bold,
