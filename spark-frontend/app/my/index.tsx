@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatCard, StatRow } from '@/components/domain/StatCard';
@@ -37,7 +37,11 @@ export default function MyPageScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profile}>
-          <View style={styles.avatar} />
+          {profile.avatarUrl ? (
+            <Image source={{ uri: profile.avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, styles.avatarPlaceholder]} />
+          )}
           <View style={styles.profileTexts}>
             <Text style={styles.nickname}>{profile.nickname}</Text>
             <Text style={styles.status}>{profile.statusMessage}</Text>
@@ -116,6 +120,8 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
+  },
+  avatarPlaceholder: {
     backgroundColor: colors.cardBorder,
   },
   profileTexts: {
