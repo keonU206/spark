@@ -70,7 +70,14 @@ public final class GroupDtos {
     public record FeedReactionResponse(String emoji, int count) {
     }
 
-    public record FeedCommentResponse(String userId, String nickname, String body) {
+    public record FeedCommentResponse(
+            String id,
+            String userId,
+            String nickname,
+            String body,
+            /** 내가 남긴 응원이면 true — 버튼이 "응원 수정"으로 바뀐다 */
+            boolean isMine
+    ) {
     }
 
     public record FeedPostResponse(

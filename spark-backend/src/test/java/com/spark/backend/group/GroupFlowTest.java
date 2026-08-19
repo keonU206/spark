@@ -170,7 +170,20 @@ class GroupFlowTest {
 
         mockMvc.perform(get("/groups/" + groupId).header("Authorization", "Bearer " + ownerToken))
                 .andExpect(jsonPath("$.feed[0].comments[0].nickname").value("친구"))
-                .andExpect(jsonPath("$.feed[0].comments[0].body").value("다음에 같이 운동하자"));
+                .andExpect(jsonPath("$.feed[0].comments[0].body").value("다음에 같이 운동하자"))
+                .andExpect(jsonPath("$.feed[0].comments[0].isMine").value(false));
+
+        // 같은 사람이 또 보내면 새로 달리지 않고 내용이 수정된다 (1인 1응원)
+        mockMvc.perform(post("/groups/" + groupId + "/feed/" + postId + "/comments")
+                        .header("Authorization", "Bearer " + friendToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"body\": \"대단해!\" }"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/groups/" + groupId).header("Authorization", "Bearer " + friendToken))
+                .andExpect(jsonPath("$.feed[0].comments.length()").value(1))
+                .andExpect(jsonPath("$.feed[0].comments[0].body").value("대단해!"))
+                .andExpect(jsonPath("$.feed[0].comments[0].isMine").value(true));
     }
 
     @Test

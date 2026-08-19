@@ -211,6 +211,7 @@ export default function GroupDetailScreen() {
         <CheerModal
           visible
           authorNickname={cheerTarget.author.nickname}
+          initialMessage={cheerTarget.comments.find((c) => c.isMine)?.body}
           sending={comment.isPending}
           onClose={() => setCheerTarget(null)}
           onSend={(message) => {

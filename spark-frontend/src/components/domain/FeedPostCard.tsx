@@ -38,7 +38,10 @@ export function FeedPostCard({
             onPress={onCheer}
             style={({ pressed }) => [styles.cheer, pressed && styles.pressed]}
           >
-            <Text style={styles.cheerLabel}>응원보내기</Text>
+            {/* 이미 응원했으면 수정 모드 — 다시 보내면 내 응원이 바뀐다 */}
+            <Text style={styles.cheerLabel}>
+              {post.comments.some((c) => c.isMine) ? '응원 수정' : '응원보내기'}
+            </Text>
           </Pressable>
         ) : onDelete ? (
           /* 내 글에는 응원 대신 삭제 버튼 */
@@ -66,8 +69,8 @@ export function FeedPostCard({
           </View>
         ))}
 
-        {post.comments.map((comment) => (
-          <Text key={comment.userId} style={styles.comment} numberOfLines={1}>
+        {post.comments.map((comment, index) => (
+          <Text key={comment.id ?? `${comment.userId}-${index}`} style={styles.comment} numberOfLines={1}>
             <Text style={styles.commentAuthor}>{`${comment.nickname} `}</Text>
             {comment.body}
           </Text>

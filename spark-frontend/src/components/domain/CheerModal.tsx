@@ -26,18 +26,21 @@ const PRESETS = [
 export function CheerModal({
   visible,
   authorNickname,
+  initialMessage,
   sending,
   onSend,
   onClose,
 }: {
   visible: boolean;
   authorNickname: string;
+  /** 이미 남긴 응원이 있으면 그 내용 — 수정 모드로 열린다 */
+  initialMessage?: string;
   sending: boolean;
   onSend: (message: string) => void;
   onClose: () => void;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
-  const [custom, setCustom] = useState('');
+  const [custom, setCustom] = useState(initialMessage ?? '');
 
   const message = custom.trim() || picked;
 
@@ -57,7 +60,11 @@ export function CheerModal({
               <Text style={styles.closeGlyph}>✕</Text>
             </Pressable>
           </View>
-          <Text style={styles.subtitle}>{`${authorNickname}님에게 마음을 전해보세요`}</Text>
+          <Text style={styles.subtitle}>
+            {initialMessage
+              ? '다시 보내면 이전 응원이 새 내용으로 바뀌어요'
+              : `${authorNickname}님에게 마음을 전해보세요`}
+          </Text>
 
           <View style={styles.chips}>
             {PRESETS.map((preset) => {

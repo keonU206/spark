@@ -152,9 +152,13 @@ export type FeedReaction = {
 };
 
 export type FeedComment = {
+  /** 서버가 내려준다. mock에는 없을 수 있다 */
+  id?: string;
   userId: string;
   nickname: string;
   body: string;
+  /** 내가 남긴 응원이면 true — 버튼이 "응원 수정"으로 바뀐다 */
+  isMine?: boolean;
 };
 
 export type FeedPost = {

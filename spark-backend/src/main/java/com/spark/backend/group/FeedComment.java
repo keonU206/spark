@@ -50,4 +50,9 @@ public class FeedComment {
     void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    /** 응원은 1인 1개 — 다시 보내면 내용을 바꾼다 */
+    public void updateBody(String body) {
+        this.body = body;
+    }
 }

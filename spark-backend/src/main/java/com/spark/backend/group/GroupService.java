@@ -164,14 +164,20 @@ public class GroupService {
         feedPostRepository.delete(post);
     }
 
-    /** 확장 API — 댓글 작성 */
+    /** 응원(댓글) 남기기 — 1인 1개. 이미 남겼으면 내용을 수정한다 */
     @Transactional
     public void createComment(Long userId, Long groupId, Long postId, String body) {
         findGroupAsMember(userId, groupId);
         FeedPost post = feedPostRepository.findByIdAndGroupId(postId, groupId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "POST_NOT_FOUND",
                         "글을 찾을 수 없어요."));
-        post.getComments().add(FeedComment.builder().post(post).userId(userId).body(body).build());
+        post.getComments().stream()
+                .filter(c -> c.getUserId().equals(userId))
+                .findFirst()
+                .ifPresentOrElse(
+                        existing -> existing.updateBody(body),
+                        () -> post.getComments().add(
+                                FeedComment.builder().post(post).userId(userId).body(body).build()));
     }
 
     /* ---------------- 모임 운동 현황 ---------------- */
@@ -275,8 +281,12 @@ public class GroupService {
                 .toList();
 
         List<FeedCommentResponse> comments = post.getComments().stream()
-                .map(c -> new FeedCommentResponse(String.valueOf(c.getUserId()),
-                        nickname(users, c.getUserId()), c.getBody()))
+                .map(c -> new FeedCommentResponse(
+                        String.valueOf(c.getId()),
+                        String.valueOf(c.getUserId()),
+                        nickname(users, c.getUserId()),
+                        c.getBody(),
+                        c.getUserId().equals(viewerId)))
                 .toList();
 
         return new FeedPostResponse(
