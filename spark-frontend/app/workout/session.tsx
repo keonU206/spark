@@ -48,6 +48,7 @@ export default function SessionScreen() {
 
   // 서버가 발급한 세션 id. 완료·중단에 쓴다
   const sessionId = useRef<string | null>(null);
+  const sessionStart = useRef<Promise<string | null> | null>(null);
 
   const [consented, setConsented] = useState(false);
   const [index, setIndex] = useState(0);
@@ -68,15 +69,20 @@ export default function SessionScreen() {
 
   // 동의하면 서버에 세션 시작을 알린다 (중도 이탈을 세려면 시작 기록이 있어야 한다)
   useEffect(() => {
-    if (!consented || sessionId.current) return;
+    if (!consented || sessionId.current || sessionStart.current) return;
     const key = routineId ?? exerciseId;
     if (!key) return;
 
-    start.mutate(key, {
-      onSuccess: (res) => {
+    sessionStart.current = start.mutateAsync(key).then(
+      (res) => {
         sessionId.current = res.sessionId;
+        return res.sessionId;
       },
-    });
+      () => {
+        sessionStart.current = null;
+        return null;
+      },
+    );
     // start는 매 렌더 새로 만들어지므로 의존성에서 뺀다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consented, routineId, exerciseId]);
@@ -123,10 +129,11 @@ export default function SessionScreen() {
   }
 
   async function finish() {
-    const sessionKey = sessionId.current ?? routineId ?? exerciseId;
-    if (finishing.current || !sessionKey) return;
+    if (finishing.current) return;
     finishing.current = true;
     try {
+      const sessionKey = sessionId.current ?? await sessionStart.current;
+      if (!sessionKey) return;
       const currentReport = analysis.finishAnalysis();
       const finalAnalysisResults = currentReport && current
         ? [
@@ -225,7 +232,9 @@ export default function SessionScreen() {
           3/3 `81:1448` "루틴 완료까지 얼마 안 남았어요!"
         */}
         <Text style={styles.hint}>
-          {hasCamera
+          {start.error
+            ? start.error.message
+            : hasCamera
             ? `${analysis.repCount}회 · ${analysis.feedback}`
             : index === 0
             ? '완료까지 같이 운동해요!'
