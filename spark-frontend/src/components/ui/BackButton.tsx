@@ -4,7 +4,7 @@ import { ChevronLeftIcon } from '@/components/illustrations/icons';
 import { layout } from '@/theme/tokens';
 
 /** 실제 터치 영역 — 아이콘(24)보다 훨씬 크게 잡는다 (권장 최소 44 이상) */
-const TOUCH_SIZE = 48;
+const TOUCH_SIZE = 64;
 
 /** 화면 헤더의 뒤로가기. 아이콘 위치는 시안(x=13) 그대로, 터치 영역만 넓다 */
 export function BackButton({ onPress }: { onPress: () => void }) {
@@ -13,7 +13,7 @@ export function BackButton({ onPress }: { onPress: () => void }) {
       accessibilityRole="button"
       accessibilityLabel="뒤로 가기"
       onPress={onPress}
-      hitSlop={8}
+      hitSlop={12}
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
     >
       <ChevronLeftIcon size={layout.back.size} />
