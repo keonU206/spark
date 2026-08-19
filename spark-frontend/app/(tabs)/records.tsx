@@ -30,6 +30,7 @@ export default function RecordsScreen() {
       </View>
 
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         showsVerticalScrollIndicator={false}
       >
@@ -133,6 +134,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  scroll: {
+    flex: 1,
   },
   header: {
     backgroundColor: colors.white,

@@ -20,7 +20,9 @@ export default function TabsLayout() {
 
   return (
     <Tabs>
-      <TabSlot />
+      <View style={styles.content}>
+        <TabSlot />
+      </View>
 
       {/* TabList asChild는 스타일 배열을 받지 못해 미리 합쳐서 넘긴다 */}
       <TabList asChild>
@@ -44,6 +46,10 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  content: {
+    flex: 1,
+    minHeight: 0,
+  },
   bar: {
     position: 'absolute',
     alignSelf: 'center',
