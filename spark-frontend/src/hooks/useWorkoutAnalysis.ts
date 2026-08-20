@@ -124,6 +124,7 @@ export function useWorkoutAnalysis({ enabled, exercise }: { enabled: boolean; ex
       }
       setError(null);
       setPose(toPose(result.landmarks));
+      if (result.message) setFeedback(result.message);
       const rawMetric = metricFor(type, result.angles);
       if (rawMetric == null) return;
 

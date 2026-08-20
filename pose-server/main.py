@@ -169,6 +169,26 @@ class Detector:
 
 _detector: Detector | None = None
 _detector_creation_lock = threading.Lock()
+_stats_lock = threading.Lock()
+_stats: dict[str, int | str | None] = {
+    "requests": 0,
+    "successes": 0,
+    "last_exercise": None,
+    "last_error": None,
+}
+
+
+def _record_request(exercise_type: str) -> None:
+    with _stats_lock:
+        _stats["requests"] = int(_stats["requests"] or 0) + 1
+        _stats["last_exercise"] = exercise_type
+
+
+def _record_result(error: str | None = None) -> None:
+    with _stats_lock:
+        if error is None:
+            _stats["successes"] = int(_stats["successes"] or 0) + 1
+        _stats["last_error"] = error
 
 
 def get_detector() -> Detector:
@@ -284,25 +304,41 @@ app.add_middleware(
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "service": "spark-pose-server"}
+def health() -> dict[str, str | int | None]:
+    with _stats_lock:
+        stats = dict(_stats)
+    return {"status": "ok", "service": "spark-pose-server", **stats}
 
 
 @app.post("/api/v1/pose", response_model=PoseResponse)
 def detect_pose(request: PoseRequest) -> PoseResponse:
+    _record_request(request.exercise_type)
     profile = PROFILES.get(request.exercise_type)
     if profile is None:
-        return PoseResponse(success=False, message=f"지원하지 않는 운동: {request.exercise_type}")
+        message = f"지원하지 않는 운동: {request.exercise_type}"
+        _record_result(message)
+        return PoseResponse(success=False, message=message)
     image = _decode_image(request.image)
     if image is None:
-        return PoseResponse(success=False, message="카메라 이미지를 읽지 못했습니다.")
+        message = "카메라 이미지를 읽지 못했습니다."
+        _record_result(message)
+        return PoseResponse(success=False, message=message)
+    if os.getenv("POSE_DEBUG_FRAME") == "1":
+        cv2.imwrite("debug_last_frame.jpg", image)
     landmarks = get_detector().detect(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     if not landmarks:
-        return PoseResponse(success=False, message="전신이 카메라에 보이도록 위치를 조정해 주세요.")
-    if not _visible(landmarks, profile):
-        return PoseResponse(success=False, message="분석에 필요한 관절이 모두 보이도록 위치를 조정해 주세요.")
+        message = "전신이 카메라에 보이도록 위치를 조정해 주세요."
+        _record_result(message)
+        return PoseResponse(success=False, message=message)
     display_indices = {LANDMARK[name] for name in profile.display_names}
     display = [item for item in landmarks if item.index in display_indices]
+    if not _visible(landmarks, profile):
+        message = "카메라에서 뒤로 이동해 머리부터 발목까지 전신을 보여주세요."
+        _record_result(message)
+        # Partial landmarks are still useful as framing guidance. Returning them
+        # keeps the overlay visible while withholding angles prevents false reps.
+        return PoseResponse(success=True, landmarks=display, message=message)
+    _record_result()
     return PoseResponse(
         success=True,
         landmarks=display,

@@ -1,4 +1,7 @@
 import main
+import cv2
+import numpy as np
+from fastapi.testclient import TestClient
 from main import LANDMARK, PROFILES, Landmark, _visible, calculate_metrics
 
 
@@ -44,3 +47,25 @@ def test_detector_is_reused(monkeypatch) -> None:
     monkeypatch.setattr(main, "_detector", None)
     assert main.get_detector() is main.get_detector()
     assert len(created) == 1
+
+
+def test_partial_pose_returns_overlay_without_angles(monkeypatch) -> None:
+    partial = landmarks(("LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_ELBOW", "RIGHT_ELBOW"))
+
+    class PartialDetector:
+        def detect(self, _rgb):
+            return partial
+
+    image = np.zeros((20, 20, 3), dtype=np.uint8)
+    ok, encoded = cv2.imencode(".jpg", image)
+    assert ok
+    import base64
+    payload = base64.b64encode(encoded.tobytes()).decode()
+    monkeypatch.setattr(main, "get_detector", lambda: PartialDetector())
+    response = TestClient(main.app).post(
+        "/api/v1/pose", json={"image": payload, "exercise_type": "squat"}
+    )
+    body = response.json()
+    assert body["success"] is True
+    assert body["landmarks"]
+    assert body["angles"] is None
