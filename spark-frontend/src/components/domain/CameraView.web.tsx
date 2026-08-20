@@ -31,7 +31,12 @@ export function CameraView({
           throw new Error('이 브라우저는 카메라를 지원하지 않아요. Chrome의 localhost로 접속해주세요.');
         }
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            aspectRatio: { ideal: 4 / 3 },
+          },
           audio: false,
         });
         if (disposed) {
@@ -72,10 +77,13 @@ export function CameraView({
       if (!video || video.readyState < 2 || !video.videoWidth) return;
       const canvas = canvasRef.current ?? document.createElement('canvas');
       canvasRef.current = canvas;
-      canvas.width = 512;
-      canvas.height = Math.round((video.videoHeight / video.videoWidth) * 512);
+      const height = Math.round((video.videoHeight / video.videoWidth) * 512);
+      if (canvas.width !== 512) canvas.width = 512;
+      if (canvas.height !== height) canvas.height = height;
       const context = canvas.getContext('2d', { willReadFrequently: true });
       if (!context) return;
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.clearRect(0, 0, canvas.width, canvas.height);
       // 화면의 전면 카메라 미러링과 분석 이미지 좌표를 일치시킨다.
       context.translate(canvas.width, 0);
       context.scale(-1, 1);
@@ -95,7 +103,7 @@ export function CameraView({
         style: {
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
+          objectFit: 'contain',
           transform: 'scaleX(-1)',
         },
       })}

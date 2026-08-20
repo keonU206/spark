@@ -44,7 +44,7 @@ function PoseOverlay({ pose }: { pose: Pose }) {
   };
 
   return (
-    <Svg style={styles.overlay} viewBox="0 0 1 1" preserveAspectRatio="none">
+    <Svg style={styles.overlay} viewBox="0 0 4 3" preserveAspectRatio="xMidYMid meet">
       {POSE_EDGES.map(([from, to]) => {
         const a = visible(from);
         const b = visible(to);
@@ -52,12 +52,12 @@ function PoseOverlay({ pose }: { pose: Pose }) {
         return (
           <Line
             key={`${from}-${to}`}
-            x1={a.x}
-            y1={a.y}
-            x2={b.x}
-            y2={b.y}
+            x1={a.x * 4}
+            y1={a.y * 3}
+            x2={b.x * 4}
+            y2={b.y * 3}
             stroke={colors.main}
-            strokeWidth={0.006}
+            strokeWidth={0.02}
             strokeLinecap="round"
           />
         );
@@ -66,7 +66,7 @@ function PoseOverlay({ pose }: { pose: Pose }) {
       {pose.keypoints
         .filter((k) => k.score >= KEYPOINT_SCORE_THRESHOLD)
         .map((k) => (
-          <Circle key={k.name} cx={k.x} cy={k.y} r={0.018} fill={colors.main} />
+          <Circle key={k.name} cx={k.x * 4} cy={k.y * 3} r={0.045} fill={colors.main} />
         ))}
     </Svg>
   );

@@ -96,6 +96,6 @@ export function exerciseTypeFor(id?: string, name?: string): ExerciseType {
   if (value.includes('e-7') || value.includes('어깨')) return 'shoulder_roll';
   if (value.includes('e-14') || value.includes('가슴')) return 'chest_opener';
   if (value.includes('e-15') || value.includes('사이드 밴드')) return 'side_bend';
-  if (value.includes('런지') || value.includes('lunge')) return 'lunge';
+  if (value.includes('e-4') || value.includes('런지') || value.includes('lunge')) return 'lunge';
   return 'squat';
 }

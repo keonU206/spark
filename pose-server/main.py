@@ -91,6 +91,15 @@ PROFILES = {
     ),
 }
 
+FRAMING_MESSAGES = {
+    "squat": "카메라에서 뒤로 이동해 머리부터 발목까지 전신을 보여주세요.",
+    "lunge": "카메라에서 뒤로 이동해 양쪽 다리와 발목이 모두 보이게 해주세요.",
+    "chin_tuck": "카메라를 측면에 두고 귀·코·양쪽 어깨가 보이게 해주세요.",
+    "shoulder_roll": "카메라를 정면에 두고 양쪽 어깨와 팔꿈치가 보이게 해주세요.",
+    "chest_opener": "카메라를 정면에 두고 팔꿈치부터 골반까지 보이게 해주세요.",
+    "side_bend": "카메라를 정면에 두고 양쪽 어깨와 골반이 보이게 해주세요.",
+}
+
 
 class Landmark(BaseModel):
     index: int
@@ -333,7 +342,7 @@ def detect_pose(request: PoseRequest) -> PoseResponse:
     display_indices = {LANDMARK[name] for name in profile.display_names}
     display = [item for item in landmarks if item.index in display_indices]
     if not _visible(landmarks, profile):
-        message = "카메라에서 뒤로 이동해 머리부터 발목까지 전신을 보여주세요."
+        message = FRAMING_MESSAGES[request.exercise_type]
         _record_result(message)
         # Partial landmarks are still useful as framing guidance. Returning them
         # keeps the overlay visible while withholding angles prevents false reps.

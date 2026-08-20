@@ -47,7 +47,8 @@ function thresholds(type: ExerciseType, metric: number, neutral: number | null) 
       returned: neutral != null && metric >= neutral * 0.88,
     };
   }
-  if (type === 'shoulder_roll') return { active: metric <= 0.3, returned: metric >= 0.55 };
+  // Natural shoulder rolls do not always lift elbows to shoulder height.
+  if (type === 'shoulder_roll') return { active: metric <= 0.45, returned: metric >= 0.58 };
   if (type === 'chest_opener') return { active: metric >= 72, returned: metric <= 50 };
   if (type === 'side_bend') return { active: Math.abs(metric) >= 14, returned: Math.abs(metric) <= 7 };
   // 얕은 시도도 리포트에 포함하기 위해 135°부터 동작 시작으로 본다.
